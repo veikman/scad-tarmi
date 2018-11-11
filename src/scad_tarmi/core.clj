@@ -54,6 +54,12 @@
 ;; INTERFACE FUNCTIONS ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn long-hex-diagonal
+  "The “long diagonal” of a hexagon, computed from the “short” or flat-to-flat
+  diagonal."
+  [short-diagonal]
+  (* 2 (/ short-diagonal (Math/sqrt 3))))
+
 (def maybe-rotate (cleaning-tuple-fn model/rotate [0 0 0]))
 (def maybe-scale (cleaning-tuple-fn model/scale [1 1 1]))
 (def maybe-translate (cleaning-tuple-fn model/translate [0 0 0]))

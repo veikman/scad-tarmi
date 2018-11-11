@@ -3,7 +3,8 @@
 (ns scad-tarmi.threaded
   (:require [clojure.spec.alpha :as spec]
             [scad-clj.model :as model]
-            [scad-tarmi.core :refer [sin cos τ maybe-scale]]))
+            [scad-tarmi.core :refer [sin cos τ long-hex-diagonal
+                                     maybe-scale]]))
 
 
 ;;;;;;;;;;;;;;
@@ -19,42 +20,49 @@
   for printer inaccuracy and material shrinkage."
   {3 {:socket-diameter 5.5
       :hex-nut-height 2.4
-      :thread-pitch 0.5
+      :thread-pitch-coarse 0.5
+      :head-hex-drive-short-diagonal 2.5
       :iso7089-inner-diameter 3.2
       :iso7089-outer-diameter 7
       :iso7089-thickness 0.5}
    4 {:socket-diameter 7
       :hex-nut-height 3.2
-      :thread-pitch 0.7
+      :thread-pitch-coarse 0.7
+      :head-hex-drive-short-diagonal 3
       :iso7089-inner-diameter 4.3
       :iso7089-outer-diameter 9
       :iso7089-thickness 0.8}
    5 {:socket-diameter 8.5
-      :hex-short-diagonal 8
+      :hex-head-short-diagonal 8
       :hex-nut-height 4.7
       :hex-head-height-minimum 3.35
-      :thread-pitch 0.8
+      :thread-pitch-coarse 0.8
+      :head-hex-drive-short-diagonal 4
       :iso7089-inner-diameter 5.3
       :iso7089-outer-diameter 10
       :iso7089-thickness 1}
    6 {:socket-diameter 10
       :hex-nut-height 5.2
       :hex-head-height-minimum 3.85
-      :thread-pitch 1
+      :thread-pitch-coarse 1
+      :head-hex-drive-short-diagonal 5
       :iso7089-inner-diameter 6.4
       :iso7089-outer-diameter 12
       :iso7089-thickness 1.6}
    8 {:socket-diameter 13
       :hex-nut-height 6.8
       :hex-head-height-minimum 5.1
-      :thread-pitch 1.25
+      :thread-pitch-coarse 1.25
+      :head-hex-drive-short-diagonal 6
       :iso7089-inner-diameter 8.4
       :iso7089-outer-diameter 16
       :iso7089-thickness 1.6}})
 
 (spec/def ::iso-nominal #(contains? iso-data %))
-(spec/def ::iso-property #{:hex-short-diagonal
-                           :hex-long-diagonal
+(spec/def ::iso-property #{:hex-head-short-diagonal
+                           :hex-head-long-diagonal
+                           :head-hex-drive-short-diagonal
+                           :head-hex-drive-long-diagonal
                            :hex-head-height-minimum
                            :hex-nut-height
                            :socket-diameter
@@ -63,15 +71,15 @@
                            :button-height
                            :countersunk-diameter
                            :countersunk-height
-                           :thread-pitch
+                           :thread-pitch-coarse
                            :iso7089-inner-diameter
                            :iso7089-outer-diameter
                            :iso7089-thickness})
-(spec/def ::head-style #{:hex     ; Hex head with the diameter of a nut.
-                         :socket  ; Full cylindrical counterbore cap.
-                         :button  ; Partial (low, smooth-edged) socket cap.
-                         :countersunk}) ; Flat head tapering toward the bolt.
-
+(spec/def ::head-type #{:hex     ; Hex head with the diameter of a nut.
+                        :socket  ; Full cylindrical counterbore cap.
+                        :button  ; Partial (low, smooth-edged) socket cap.
+                        :countersunk}) ; Flat head tapering toward the bolt.
+(spec/def ::drive-type #{:hex})
 
 (defn- get-datum
   [nominal-diameter key]
@@ -79,11 +87,15 @@
          (spec/valid? ::iso-property key)]}
   (let [data (get iso-data nominal-diameter)]
    (case key
-     :hex-short-diagonal  ; Flat-to-flat width of a hex head.
+     :hex-head-short-diagonal  ; Flat-to-flat width of a hex head.
        ;; For most sizes, this value is equal to socket diameter.
        (get data key (get-datum nominal-diameter :socket-diameter))
-     :hex-long-diagonal  ; Corner-to-corner diameter of a hex head.
-       (* 2 (/ (get-datum nominal-diameter :hex-short-diagonal) (Math/sqrt 3)))
+     :hex-head-long-diagonal  ; Corner-to-corner diameter of a hex head.
+       (long-hex-diagonal
+         (get-datum nominal-diameter :hex-head-short-diagonal))
+     :head-hex-drive-long-diagonal
+       (long-hex-diagonal
+         (get-datum nominal-diameter :head-hex-drive-short-diagonal))
      :socket-height
        nominal-diameter
      :button-diameter
@@ -103,19 +115,20 @@
                    :requested-property key}))))))
 
 (defn- hex-item
-  [iso-size height]
-  (let [diagonal (get-datum iso-size :hex-long-diagonal)]
+  [iso-size height & {:keys [measurement]
+                      :or {measurement :hex-head-long-diagonal}}]
+  (let [diagonal (get-datum iso-size measurement)]
     (->>
       (model/cylinder (/ diagonal 2) height)
       (model/with-fn 6)
       (model/rotate [0 0 (/ Math/PI 6)]))))
 
 (defn- get-head-height
-  [iso-size head]
+  [iso-size head-type]
   {:pre [(spec/valid? ::iso-nominal iso-size)
-         (spec/valid? ::head-style head)]}
+         (spec/valid? ::head-type head-type)]}
   (get-datum iso-size
-    (case head
+    (case head-type
       :hex :hex-head-height-minimum
       :socket :socket-height
       :button :button-height
@@ -123,11 +136,11 @@
 
 (defn- bolt-head
   "A model of the head of a bolt, without a drive."
-  [{:keys [iso-size head] :as options}]
+  [{:keys [iso-size head-type] :as options}]
   {:pre [(spec/valid? ::iso-nominal iso-size)
-         (spec/valid? ::head-style head)]}
-  (let [height (get-head-height iso-size head)]
-    (case head
+         (spec/valid? ::head-type head-type)]}
+  (let [height (get-head-height iso-size head-type)]
+    (case head-type
       :hex
         (hex-item iso-size height)
       :socket
@@ -146,8 +159,16 @@
               (model/cylinder (/ iso-size 2) edge)))))))
 
 (defn- bolt-drive
-  "A model (negative) of the thing you stick your bit in."
-  [_])
+  "A model of the thing you stick your bit in."
+  [{:keys [iso-size head-type drive-type drive-recess-depth]}]
+  {:pre [(spec/valid? ::iso-nominal iso-size)
+         (spec/valid? ::drive-type drive-type)]}
+  (let [depth (or drive-recess-depth
+                  (/ (get-head-height iso-size head-type) 2))]
+    (model/translate [0 0 (/ depth -2)]
+      (case drive-type
+        :hex (hex-item iso-size depth
+               :measurement :head-hex-drive-long-diagonal)))))
 
 (defn- thread
   "A model of threading, as on a screw.
@@ -261,7 +282,7 @@
   "Close over a function to limit threading measurements as for the transition
   between the flat part of a long bolt and its threaded section.
   The closure will allow a radius of zero to be unchanged. This special case
-  if needed for the segments of a piece of threading to continue to build from
+  is needed for the segments of a piece of threading to continue to build from
   the middle even when the inner radius converges toward the outer, keeping
   polyhedrons legal."
   [inner-radius outer-radius length]
@@ -302,7 +323,7 @@
       :or {taper-fn rounding-taper} :as options}]
   {:pre [(spec/valid? ::iso-nominal iso-size)]}
   (thread (merge options {:outer-diameter iso-size
-                          :pitch (get-datum iso-size :thread-pitch)
+                          :pitch (get-datum iso-size :thread-pitch-coarse)
                           :taper-fn taper-fn})))
 
 (defn bolt
@@ -310,32 +331,34 @@
   The very top of the head sits at [0 0 0] with the bolt pointing down.
   The total length of the bolt is the sum of head height (computed from
   nominal ISO size), unthreaded and threaded length parameters."
-  [& {:keys [iso-size negative head drive unthreaded-length threaded-length
-             scale]
-      :or {head :hex, unthreaded-length 0, threaded-length 10, scale 1}
+  [& {:keys [iso-size head-type drive-type unthreaded-length threaded-length
+             scale negative]
+      :or {head-type :hex, unthreaded-length 0, threaded-length 10, scale 1}
       :as options}]
   {:pre [(spec/valid? ::iso-nominal iso-size)
-         (spec/valid? ::head-style head)]}
+         (spec/valid? ::head-type head-type)
+         (spec/valid? (spec/nilable ::head-type) head-type)]}
   (let [r (/ iso-size 2)
-        head-height (get-head-height iso-size head)]
+        head-height (get-head-height iso-size head-type)]
     (maybe-scale scale
-      (if (or negative (nil? drive))
+      (if (or negative (nil? drive-type))
         ;; A model without a drive in its head.
         (model/union
           (model/translate [0 0 (- (/ head-height 2))]
-            (bolt-head (merge options {:head head})))
+            (bolt-head (merge options {:head-type head-type})))
           (when (pos? unthreaded-length)
             (model/translate [0 0 (- (- head-height) (/ unthreaded-length 2))]
               (model/cylinder r unthreaded-length)))
           (when (pos? threaded-length)
-            (model/translate [0 0 (- (- (+ head-height unthreaded-length)) (/ threaded-length 2))]
+            (model/translate [0 0 (- (- (+ head-height unthreaded-length))
+                                     (/ threaded-length 2))]
               (rod :iso-size iso-size
                    :length threaded-length
                    :taper-fn bolt-taper))))
         ;; A model with a drive.
         (model/difference
-          (apply bolt (merge options {:scale 1}))
-          (drive options))))))
+          (apply bolt (flatten (vec (merge options {:scale 1 :drive-type nil}))))
+          (bolt-drive (merge options {:head-type head-type})))))))
 
 (defn nut
   "A single hex nut centred at [0 0 0]."
