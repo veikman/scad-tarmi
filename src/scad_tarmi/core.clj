@@ -6,9 +6,12 @@
 ;; CONSTANTS AND SHORTCUTS ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(def √ #(Math/sqrt %))
 (def sin #(Math/sin %))
 (def cos #(Math/cos %))
-(def τ (* 2 Math/PI))
+
+(def π Math/PI)
+(def τ (* 2 π))
 
 
 ;;;;;;;;;;;;;;

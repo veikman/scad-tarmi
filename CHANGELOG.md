@@ -5,5 +5,9 @@ This change log follows the conventions of [keepachangelog.com](http://keepachan
 ### New
 - Added “maybe” wrappers for `rotate`, `scale` and `translate`.
 - Added threaded fasteners.
+- Added `long-hex-diagonal` for computing the long diagonal of a hexagon
+  from the short diagonal.
+- Added a handful of constants and abbreviations of dubious value:
+  √, sin, cos, π and τ.
 
 [Unreleased]: https://github.com/veikman/scad-tarmi/compare/v0.1.0...HEAD
