@@ -30,12 +30,10 @@
                       (System/exit 1)))))
         files [["nut-m6"
                 (threaded/nut :iso-size 6)]
-               ["nut-m6-101-percent"
-                (threaded/nut :iso-size 6 :scale [1.01 1])]
                ["nut-m4"
                 (threaded/nut :iso-size 4)]
-               ["nut-m4-101-percent"
-                (threaded/nut :iso-size 4 :scale [1.01 1])]]]
+               ["nut-m3"
+                (threaded/nut :iso-size 3)]]]
      (doall (pmap write files))
      (System/exit 0)))
 
