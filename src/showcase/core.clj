@@ -12,18 +12,31 @@
 
 (ns showcase.core
   (:require [clojure.java.io :refer [file make-parents]]
+            [clojure.java.shell :refer [sh]]
             [scad-tarmi.threaded :as threaded]
             [scad-clj.scad :refer [write-scad]]))
 
 (defn -main
   [& _]
-  (let [write (fn [filename model]
-                (let [filepath (file "showcase" (str filename ".scad"))]
-                  (make-parents filepath)
-                  (spit filepath (write-scad model))))]
-    (write "nut-m6" (threaded/nut :iso-size 6))
-    (write "nut-m6-101-percent" (threaded/nut :iso-size 6 :scale [1.01 1]))
-    (write "nut-m4" (threaded/nut :iso-size 4))
-    (write "nut-m4-101-percent" (threaded/nut :iso-size 4 :scale [1.01 1]))))
+  (let [write (fn [[filename model]]
+                (let [scad (file "showcase" "scad" (str filename ".scad"))
+                      stl (file "showcase" "stl" (str filename ".stl"))]
+                  (make-parents scad)
+                  (spit scad (write-scad model))
+                  (make-parents stl)
+                  (if-not (zero? (:exit (sh "openscad" "-o" (str stl) (str scad))))
+                    (do
+                      (println "Rendering" stl "failed")
+                      (System/exit 1)))))
+        files [["nut-m6"
+                (threaded/nut :iso-size 6)]
+               ["nut-m6-101-percent"
+                (threaded/nut :iso-size 6 :scale [1.01 1])]
+               ["nut-m4"
+                (threaded/nut :iso-size 4)]
+               ["nut-m4-101-percent"
+                (threaded/nut :iso-size 4 :scale [1.01 1])]]]
+     (doall (pmap write files))
+     (System/exit 0)))
 
 (apply -main (rest *command-line-args*))
