@@ -13,8 +13,9 @@
 (ns showcase.core
   (:require [clojure.java.io :refer [file make-parents]]
             [clojure.java.shell :refer [sh]]
+            [scad-clj.scad :refer [write-scad]]
             [scad-tarmi.threaded :as threaded]
-            [scad-clj.scad :refer [write-scad]]))
+            [scad-tarmi.dfm :as dfm]))
 
 (defn -main
   [& _]
@@ -32,8 +33,12 @@
                 (threaded/nut :iso-size 6)]
                ["nut-m4"
                 (threaded/nut :iso-size 4)]
+               ["nut-m4-dfm"
+                (threaded/nut :iso-size 4 :dfm-pair (dfm/symmetry))]
                ["nut-m3"
-                (threaded/nut :iso-size 3)]]]
+                (threaded/nut :iso-size 3)]
+               ["nut-m3-dfm"
+                (threaded/nut :iso-size 3 :dfm-pair (dfm/symmetry))]]]
      (doall (pmap write files))
      (System/exit 0)))
 

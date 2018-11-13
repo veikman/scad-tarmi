@@ -30,29 +30,3 @@
   (testing "maybe-rotate for a non-neutral argument and two shapes."
     (is (= (maybe-rotate [0 1 0] ::a ::b)
            `(:rotatec [0 1 0] (::a ::b))))))
-
-(deftest argument-expansion
-  (testing "maybe-scale for a neutral number argument"
-    (is (= (maybe-scale 1 ::a)
-           `(::a))))
-  (testing "maybe-scale for a neutral 1-tuple argument"
-    (is (= (maybe-scale [1] ::a)
-           `(::a))))
-  (testing "maybe-scale for a neutral 2-tuple argument"
-    (is (= (maybe-scale [1 1] ::a)
-           `(::a))))
-  (testing "maybe-scale for a neutral 3-tuple argument"
-    (is (= (maybe-scale [1 1 1] ::a)
-           `(::a))))
-  (testing "maybe-scale for a non-neutral number argument"
-    (is (= (maybe-scale 2 ::a)
-           `(:scale [2 2 2] ::a))))
-  (testing "maybe-scale for a non-neutral 1-tuple argument"
-    (is (= (maybe-scale [2] ::a)
-           `(:scale [2 2 2] ::a))))
-  (testing "maybe-scale for a non-neutral 2-tuple argument"
-    (is (= (maybe-scale [2 1] ::a)
-           `(:scale [2 2 1] ::a))))
-  (testing "maybe-scale for a non-neutral 3-tuple argument"
-    (is (= (maybe-scale [1 2 2] ::a)
-           `(:scale [1 2 2] ::a)))))

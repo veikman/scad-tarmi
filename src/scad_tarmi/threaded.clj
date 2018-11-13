@@ -3,9 +3,8 @@
 (ns scad-tarmi.threaded
   (:require [clojure.spec.alpha :as spec]
             [scad-clj.model :as model]
-            [scad-tarmi.core :refer [sin cos τ long-hex-diagonal
-                                     maybe-scale]]))
-
+            [scad-tarmi.core :refer [sin cos τ long-hex-diagonal]]
+            [scad-tarmi.dfm :as dfm]))
 
 ;;;;;;;;;;;;;;
 ;; INTERNAL ;;
@@ -260,7 +259,7 @@
 ;; INTERFACE FUNCTIONS — MINOR ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; The following three functions should rarely be need be in an application.
+;; The following three functions should rarely be needed in an application.
 ;; They control how a threaded fastener flares or tapers at its ends.
 
 (defn rounding-taper
@@ -280,11 +279,8 @@
 
 (defn flare
   "Close over a function to limit threading measurements as for the transition
-  between the flat part of a long bolt and its threaded section.
-  The closure will allow a radius of zero to be unchanged. This special case
-  is needed for the segments of a piece of threading to continue to build from
-  the middle even when the inner radius converges toward the outer, keeping
-  polyhedrons legal."
+  between the flat part of a long bolt and its threaded section, or the two
+  sides of a nut."
   [inner-radius outer-radius length]
   {:pre [(number? inner-radius)
          (number? outer-radius)
@@ -292,6 +288,10 @@
   (let [distance-fn (distance-to-end length)
         flattener (flat-end-z length)]
     (fn [base-radius base-z]
+      ;; The closure will allow a radius of zero to be unchanged. This special
+      ;; case is needed for the segments of a piece of threading to continue to
+      ;; build from the middle even when the inner radius converges toward the
+      ;; outer, keeping polyhedrons legal.
       {:pre [(<= base-radius outer-radius)]}
       (let [distance (distance-fn base-z)]
         [(if (zero? base-radius)
@@ -330,22 +330,31 @@
   "A model of an ISO metric bolt.
   The very top of the head sits at [0 0 0] with the bolt pointing down.
   The total length of the bolt is the sum of head height (computed from
-  nominal ISO size), unthreaded and threaded length parameters."
+  nominal ISO size), unthreaded and threaded length parameters.
+  Though a drive-type parameter is accepted, only a socket-cap-style hex
+  drive is supported, and even that will be ignored on a negative."
   [& {:keys [iso-size head-type drive-type unthreaded-length threaded-length
-             scale negative]
-      :or {head-type :hex, unthreaded-length 0, threaded-length 10, scale 1}
+             dfm-pair negative]
+      :or {head-type :hex, unthreaded-length 0, threaded-length 10,
+           dfm-pair dfm/none}
       :as options}]
   {:pre [(spec/valid? ::iso-nominal iso-size)
          (spec/valid? ::head-type head-type)
          (spec/valid? (spec/nilable ::head-type) head-type)]}
-  (let [r (/ iso-size 2)
-        head-height (get-head-height iso-size head-type)]
-    (maybe-scale scale
-      (if (or negative (nil? drive-type))
-        ;; A model without a drive in its head.
+  (let [merged
+          (merge options {:head-type head-type
+                          :unthreaded-length unthreaded-length
+                          :threaded-length threaded-length
+                          :dfm-pair dfm-pair})
+        r (/ iso-size 2)
+        head-height (get-head-height iso-size head-type)
+        shrink ((:positive dfm-pair) iso-size)
+        enlarge ((:negative dfm-pair) iso-size)]
+    (if negative
+      (enlarge
         (model/union
           (model/translate [0 0 (- (/ head-height 2))]
-            (bolt-head (merge options {:head-type head-type})))
+            (bolt-head merged))
           (when (pos? unthreaded-length)
             (model/translate [0 0 (- (- head-height) (/ unthreaded-length 2))]
               (model/cylinder r unthreaded-length)))
@@ -354,25 +363,37 @@
                                      (/ threaded-length 2))]
               (rod :iso-size iso-size
                    :length threaded-length
-                   :taper-fn bolt-taper))))
-        ;; A model with a drive.
-        (model/difference
-          (apply bolt (flatten (vec (merge options {:scale 1 :drive-type nil}))))
-          (bolt-drive (merge options {:head-type head-type})))))))
+                   :taper-fn bolt-taper)))))
+      ;; Else a positive. Consider including a drive.
+      (model/difference
+        (shrink
+          ;; Request no further scaling.
+          (apply bolt (flatten (vec (merge merged
+                                      {:dfm-pair dfm/none :negative true})))))
+        (when drive-type
+          (enlarge
+            (bolt-drive merged)))))))
 
 (defn nut
   "A single hex nut centred at [0 0 0]."
-  [& {:keys [iso-size negative height scale]
-      :or {scale 1}}]
+  [& {:keys [iso-size height dfm-pair negative]
+      :or {dfm-pair dfm/none}}]
   {:pre [(spec/valid? ::iso-nominal iso-size)]}
-  (let [height (or height (get-datum iso-size :hex-nut-height))]
-    (maybe-scale scale
-      (if negative
-        ;; A convex model of a nut, without a hole. For use as negative space.
-        (hex-item iso-size height)
-        ;; A more complete model.
-        (model/difference
-          (hex-item iso-size height)
+  (let [height (or height (get-datum iso-size :hex-nut-height))
+        shrink ((:positive dfm-pair) iso-size)
+        enlarge ((:negative dfm-pair) iso-size)]
+    (if negative
+      ;; A convex model of a nut.
+      (enlarge
+        (hex-item iso-size height))
+      ;; A more complete model.
+      (model/difference
+        ;; Recurse to make the positive model.
+        (shrink
+          ;; Do not pass on the dfm-pair; that could cause a double transform.
+          (nut :iso-size iso-size :height height :negative true))
+        ;; Cut out the threading.
+        (enlarge
           (rod :iso-size iso-size :length height :taper-fn flare))))))
 
 (defn washer
