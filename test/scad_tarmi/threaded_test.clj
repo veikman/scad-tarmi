@@ -7,9 +7,9 @@
   "Test a flaring closure for a non-standard body of height 4."
   (let [flare (threaded/flare 1 2 4)]
     (testing "Below base level."
-      (is (= (flare 0 -1) [0 0]))
-      (is (= (flare 1 -1) [2 0]))
-      (is (= (flare 2 -1) [2 0])))
+      (is (= (flare 0 -1) [0 -0.001]))
+      (is (= (flare 1 -1) [2 -0.001]))
+      (is (= (flare 2 -1) [2 -0.001])))
     (testing "Base level."
       (is (= (flare 0 0) [0 0]))
       (is (= (flare 1 0) [2 0]))
@@ -47,6 +47,6 @@
       (is (= (flare 1 4) [2 4]))
       (is (= (flare 2 4) [2 4])))
     (testing "Above top level."
-      (is (= (flare 0 5) [0 4]))
-      (is (= (flare 1 5) [2 4]))
-      (is (= (flare 2 5) [2 4])))))
+      (is (= (flare 0 5) [0 4.001]))
+      (is (= (flare 1 5) [2 4.001]))
+      (is (= (flare 2 5) [2 4.001])))))

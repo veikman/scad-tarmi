@@ -249,10 +249,12 @@
 (defn- flat-end-z
   "Close over a function that limits a z-coordinate to fall within the passed
   length of an object. This is used to prevent lengthwise overshoot of
-  threading."
-  [limit]
+  threading, except where explicitly passed to this function."
+  [limit & {:keys [overshoot] :or {overshoot 0}}]
   {:pre [(number? limit)]}
-  (fn [coordinate] (max 0 (min limit coordinate))))
+  (let [floor (- overshoot)
+        ceiling (+ limit overshoot)]
+    (fn [coordinate] (max floor (min ceiling coordinate)))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -280,13 +282,16 @@
 (defn flare
   "Close over a function to limit threading measurements as for the transition
   between the flat part of a long bolt and its threaded section, or the two
-  sides of a nut."
+  sides of a nut.
+
+  This permits a 1 μm overshoot to improve rendering of flared negatives
+  inside hex nuts in OpenSCAD."
   [inner-radius outer-radius length]
   {:pre [(number? inner-radius)
          (number? outer-radius)
          (number? length)]}
   (let [distance-fn (distance-to-end length)
-        flattener (flat-end-z length)]
+        flattener (flat-end-z length :overshoot 0.001)]
     (fn [base-radius base-z]
       ;; The closure will allow a radius of zero to be unchanged. This special
       ;; case is needed for the segments of a piece of threading to continue to
