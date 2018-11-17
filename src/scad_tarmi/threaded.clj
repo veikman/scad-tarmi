@@ -7,17 +7,32 @@
                                      maybe-difference]]
             [scad-tarmi.dfm :as dfm]))
 
-;;;;;;;;;;;;;;
-;; INTERNAL ;;
-;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;
+;; INTERNAL CONSTANTS ;;
+;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def iso-data
+(spec/def ::iso-property #{:hex-head-short-diagonal
+                           :hex-head-long-diagonal
+                           :head-hex-drive-short-diagonal
+                           :head-hex-drive-long-diagonal
+                           :hex-head-height-minimum
+                           :hex-nut-height
+                           :socket-diameter
+                           :socket-height
+                           :button-diameter
+                           :button-height
+                           :countersunk-diameter
+                           :countersunk-height
+                           :thread-pitch-coarse
+                           :iso7089-inner-diameter
+                           :iso7089-outer-diameter
+                           :iso7089-thickness})
+
+(def ^:internal iso-data
   "Various constants from ISO metric fastener standards.
   This is a map of nominal ISO bolt diameter (in mm) to various other
-  measurements according to spec. Generally, actual nuts tend to be a little
-  smaller than the spec says, in which case these standard sizes, when used
-  for negatives, are good for a very tight fit in 3D printing, after accounting
-  for printer inaccuracy and material shrinkage."
+  measurements according to spec. Instead of relying on this raw data in
+  applications, prefer the more capable datum function."
   {3 {:socket-diameter 5.5
       :hex-nut-height 2.4
       :thread-pitch-coarse 0.5
@@ -58,30 +73,32 @@
       :iso7089-outer-diameter 16
       :iso7089-thickness 1.6}})
 
+
+;;;;;;;;;;;;;;;;;;;;;
+;; INTERFACE SPECS ;;
+;;;;;;;;;;;;;;;;;;;;;
+
+;; The following items are exposed for use in application data validation.
+
+;; Supported nominal diameters:
 (spec/def ::iso-nominal #(contains? iso-data %))
-(spec/def ::iso-property #{:hex-head-short-diagonal
-                           :hex-head-long-diagonal
-                           :head-hex-drive-short-diagonal
-                           :head-hex-drive-long-diagonal
-                           :hex-head-height-minimum
-                           :hex-nut-height
-                           :socket-diameter
-                           :socket-height
-                           :button-diameter
-                           :button-height
-                           :countersunk-diameter
-                           :countersunk-height
-                           :thread-pitch-coarse
-                           :iso7089-inner-diameter
-                           :iso7089-outer-diameter
-                           :iso7089-thickness})
+
+;; Supported types of bolt heads:
 (spec/def ::head-type #{:hex     ; Hex head with the diameter of a nut.
                         :socket  ; Full cylindrical counterbore cap.
                         :button  ; Partial (low, smooth-edged) socket cap.
                         :countersunk}) ; Flat head tapering toward the bolt.
+
+;; Supported types of bolt drives:
 (spec/def ::drive-type #{:hex})
 
-(defn- get-datum
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; INTERFACE ACCESSOR TO CONSTANTS ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn datum
+  "Retrieve or calculate a fact based on the ISO standards."
   [nominal-diameter key]
   {:pre [(spec/valid? ::iso-nominal nominal-diameter)
          (spec/valid? ::iso-property key)]}
@@ -89,13 +106,13 @@
    (case key
      :hex-head-short-diagonal  ; Flat-to-flat width of a hex head.
        ;; For most sizes, this value is equal to socket diameter.
-       (get data key (get-datum nominal-diameter :socket-diameter))
+       (get data key (datum nominal-diameter :socket-diameter))
      :hex-head-long-diagonal  ; Corner-to-corner diameter of a hex head.
        (long-hex-diagonal
-         (get-datum nominal-diameter :hex-head-short-diagonal))
+         (datum nominal-diameter :hex-head-short-diagonal))
      :head-hex-drive-long-diagonal
        (long-hex-diagonal
-         (get-datum nominal-diameter :head-hex-drive-short-diagonal))
+         (datum nominal-diameter :head-hex-drive-short-diagonal))
      :socket-height
        nominal-diameter
      :button-diameter
@@ -114,20 +131,24 @@
                   {:nominal-diameter nominal-diameter
                    :requested-property key}))))))
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;
+;; INTERNAL FUNCTIONS ;;
+;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defn- hex-item
   [iso-size height & {:keys [measurement]
                       :or {measurement :hex-head-long-diagonal}}]
-  (let [diagonal (get-datum iso-size measurement)]
-    (->>
-      (model/cylinder (/ diagonal 2) height)
-      (model/with-fn 6)
-      (model/rotate [0 0 (/ Math/PI 6)]))))
+  (let [diagonal (datum iso-size measurement)]
+    (model/rotate [0 0 (/ Math/PI 6)]
+      (model/with-fn 6
+        (model/cylinder (/ diagonal 2) height)))))
 
 (defn- get-head-height
   [iso-size head-type]
   {:pre [(spec/valid? ::iso-nominal iso-size)
          (spec/valid? ::head-type head-type)]}
-  (get-datum iso-size
+  (datum iso-size
     (case head-type
       :hex :hex-head-height-minimum
       :socket :socket-height
@@ -144,13 +165,13 @@
       :hex
         (hex-item iso-size height)
       :socket
-        (let [diameter (get-datum iso-size :socket-diameter)]
+        (let [diameter (datum iso-size :socket-diameter)]
           (model/cylinder (/ diameter 2) height))
       :button
-        (let [diameter (get-datum iso-size :button-diameter)]
+        (let [diameter (datum iso-size :button-diameter)]
           (model/cylinder (/ diameter 2) height))
       :countersunk
-        (let [diameter (get-datum iso-size :countersunk-diameter)
+        (let [diameter (datum iso-size :countersunk-diameter)
               edge (Math/log iso-size)]
           (model/hull
             (model/translate [0 0 (+ (/ edge -4) (/ height 2))]
@@ -173,10 +194,10 @@
 (defn- thread
   "A model of threading, as on a screw.
   This model has a solid interior, thus needing no union with an inner
-  cylinder. Its grooves are not flattened at the bottom.
+  cylinder. Its grooves are not flattened by default.
 
   The ‘outer-diameter’ argument corresponds to the nominal major diameter of
-  an ISO 262 thread.
+  an ISO 262 thread, but is not limited here to any ISO standard.
 
   The ‘pitch’ describes the interval from one peak to the next, lengthwise.
 
@@ -331,7 +352,7 @@
   {:pre [(spec/valid? ::iso-nominal iso-size)]}
   (compensator iso-size {:negative negative}
     (thread (merge options {:outer-diameter iso-size
-                            :pitch (get-datum iso-size :thread-pitch-coarse)
+                            :pitch (datum iso-size :thread-pitch-coarse)
                             :taper-fn taper-fn}))))
 
 (defn bolt
@@ -387,10 +408,10 @@
   [& {:keys [iso-size height compensator negative]
       :or {compensator dfm/none}}]
   {:pre [(spec/valid? ::iso-nominal iso-size)]}
-  (let [height (or height (get-datum iso-size :hex-nut-height))]
+  (let [height (or height (datum iso-size :hex-nut-height))]
     (if negative
       ;; A convex model of a nut.
-      (compensator (get-datum iso-size :hex-head-long-diagonal) {}
+      (compensator (datum iso-size :hex-head-long-diagonal) {}
         (hex-item iso-size height))
       ;; A more complete model.
       (model/difference
@@ -405,9 +426,9 @@
 (defn washer
   "A flat, round washer centred at [0 0 0]."
   [& {:keys [iso-size inner-diameter outer-diameter height]}]
-  (let [id (or inner-diameter (get-datum iso-size :iso7089-inner-diameter))
-        od (or outer-diameter (get-datum iso-size :iso7089-outer-diameter))
-        thickness (or height (get-datum iso-size :iso7089-thickness))]
+  (let [id (or inner-diameter (datum iso-size :iso7089-inner-diameter))
+        od (or outer-diameter (datum iso-size :iso7089-outer-diameter))
+        thickness (or height (datum iso-size :iso7089-thickness))]
     (model/difference
       (model/cylinder (/ outer-diameter 2) thickness);
       (model/cylinder (/ inner-diameter 2) (+ thickness 1)))))
