@@ -325,12 +325,14 @@
 
 (defn rod
   "A threaded rod centred at [0 0 0]."
-  [& {:keys [iso-size length taper-fn]
-      :or {taper-fn rounding-taper} :as options}]
+  [& {:keys [iso-size length taper-fn compensator negative]
+      :or {taper-fn rounding-taper, compensator dfm/none, negative false}
+      :as options}]
   {:pre [(spec/valid? ::iso-nominal iso-size)]}
-  (thread (merge options {:outer-diameter iso-size
-                          :pitch (get-datum iso-size :thread-pitch-coarse)
-                          :taper-fn taper-fn})))
+  (compensator iso-size {:negative negative}
+    (thread (merge options {:outer-diameter iso-size
+                            :pitch (get-datum iso-size :thread-pitch-coarse)
+                            :taper-fn taper-fn}))))
 
 (defn bolt
   "A model of an ISO metric bolt.
@@ -342,7 +344,7 @@
   [& {:keys [iso-size head-type drive-type unthreaded-length threaded-length
              compensator negative]
       :or {head-type :hex, unthreaded-length 0, threaded-length 10,
-           compensator dfm/none}
+           compensator dfm/none, negative false}
       :as options}]
   {:pre [(spec/valid? ::iso-nominal iso-size)
          (spec/valid? ::head-type head-type)
@@ -373,8 +375,9 @@
       (maybe-difference
         (compensator iso-size {:negative false}
           ;; Request no further scaling.
-          (apply bolt (flatten (vec (merge merged
-                                      {:compensator dfm/none :negative true})))))
+          (apply bolt
+            (flatten (vec (merge merged
+                                 {:compensator dfm/none :negative true})))))
         (when drive-type
           (compensator iso-size {}
             (bolt-drive merged)))))))
@@ -392,12 +395,12 @@
       ;; A more complete model.
       (model/difference
         ;; Recurse to make the positive model.
-        (compensator iso-size {}
+        (compensator iso-size {:negative false}
           ;; Do not pass on the compensator.
           (nut :iso-size iso-size :height height :negative true))
         ;; Cut out the threading.
-        (compensator iso-size {:negative false}
-          (rod :iso-size iso-size :length height :taper-fn flare))))))
+        (rod :iso-size iso-size :length height :taper-fn flare
+             :compensator compensator :negative true)))))
 
 (defn washer
   "A flat, round washer centred at [0 0 0]."

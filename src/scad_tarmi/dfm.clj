@@ -15,7 +15,7 @@
 (spec/def ::accordion (spec/coll-of number? :min-count 1 :max-count 3))
 (spec/def ::tuplable (spec/or :num number? :tuple ::accordion))
 
-(defn- ratio [nominal error] (/ (+ nominal error) nominal))
+(defn- ratio [nominal error] (/ (- nominal error) nominal))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -95,7 +95,7 @@
   ([error] (error-fn (/ error -2) error))
   ([positive-error negative-error]
    (fn
-     ([nominal] (+ nominal negative-error))
+     ([nominal] (- nominal negative-error))
      ([nominal options & block]
       {:pre [(number? nominal)
              (map? options)]}
