@@ -3,7 +3,8 @@
 (ns scad-tarmi.threaded
   (:require [clojure.spec.alpha :as spec]
             [scad-clj.model :as model]
-            [scad-tarmi.core :refer [sin cos τ long-hex-diagonal]]
+            [scad-tarmi.core :refer [sin cos τ long-hex-diagonal
+                                     maybe-difference]]
             [scad-tarmi.dfm :as dfm]))
 
 ;;;;;;;;;;;;;;
@@ -369,7 +370,7 @@
                    :length threaded-length
                    :taper-fn bolt-taper)))))
       ;; Else a positive. Consider including a drive.
-      (model/difference
+      (maybe-difference
         (compensator iso-size {:negative false}
           ;; Request no further scaling.
           (apply bolt (flatten (vec (merge merged
