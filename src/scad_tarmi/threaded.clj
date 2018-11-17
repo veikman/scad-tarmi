@@ -15,7 +15,7 @@
                            :hex-head-long-diagonal
                            :head-hex-drive-short-diagonal
                            :head-hex-drive-long-diagonal
-                           :hex-head-height-minimum
+                           :iso4017-hex-head-height-nominal
                            :hex-nut-height
                            :socket-diameter
                            :socket-height
@@ -35,6 +35,7 @@
   applications, prefer the more capable datum function."
   {3 {:socket-diameter 5.5
       :hex-nut-height 2.4
+      :iso4017-hex-head-height-nominal 2
       :thread-pitch-coarse 0.5
       :head-hex-drive-short-diagonal 2.5
       :iso7089-inner-diameter 3.2
@@ -42,6 +43,7 @@
       :iso7089-thickness 0.5}
    4 {:socket-diameter 7
       :hex-nut-height 3.2
+      :iso4017-hex-head-height-nominal 2.8
       :thread-pitch-coarse 0.7
       :head-hex-drive-short-diagonal 3
       :iso7089-inner-diameter 4.3
@@ -50,7 +52,7 @@
    5 {:socket-diameter 8.5
       :hex-head-short-diagonal 8
       :hex-nut-height 4.7
-      :hex-head-height-minimum 3.35
+      :iso4017-hex-head-height-nominal 3.5
       :thread-pitch-coarse 0.8
       :head-hex-drive-short-diagonal 4
       :iso7089-inner-diameter 5.3
@@ -58,7 +60,7 @@
       :iso7089-thickness 1}
    6 {:socket-diameter 10
       :hex-nut-height 5.2
-      :hex-head-height-minimum 3.85
+      :iso4017-hex-head-height-nominal 4
       :thread-pitch-coarse 1
       :head-hex-drive-short-diagonal 5
       :iso7089-inner-diameter 6.4
@@ -66,7 +68,7 @@
       :iso7089-thickness 1.6}
    8 {:socket-diameter 13
       :hex-nut-height 6.8
-      :hex-head-height-minimum 5.1
+      :iso4017-hex-head-height-nominal 5.3
       :thread-pitch-coarse 1.25
       :head-hex-drive-short-diagonal 6
       :iso7089-inner-diameter 8.4
@@ -150,7 +152,7 @@
          (spec/valid? ::head-type head-type)]}
   (datum iso-size
     (case head-type
-      :hex :hex-head-height-minimum
+      :hex :iso4017-hex-head-height-nominal
       :socket :socket-height
       :button :button-height
       :countersunk :countersunk-height)))
