@@ -17,11 +17,14 @@
     (is (= (reference/scale [1 1 1] ::a ::b)
            `(:scale [1 1 1] ::a ::b)))))
 
-(deftest maybes
-  (testing "maybe-rotate with its full neutral argument and one shape."
+(deftest maybe-rotate-fn
+  (testing "maybe-rotate with its full neutral integer argument and one shape."
     (is (= (maybe-rotate [0 0 0] ::a)
            `(::a))))
-  (testing "maybe-rotate with its neutral argument and two shapes."
+  (testing "maybe-rotate with its neutral non-integer argument."
+    (is (= (maybe-rotate [0 0.0 0] ::a)
+           `(::a))))
+  (testing "maybe-rotate with its neutral integer argument and two shapes."
     (is (= (maybe-rotate [0 0 0] ::a ::b)
            `(::a ::b))))
   (testing "maybe-rotate for a non-neutral argument and one shape."
@@ -30,3 +33,17 @@
   (testing "maybe-rotate for a non-neutral argument and two shapes."
     (is (= (maybe-rotate [0 1 0] ::a ::b)
            `(:rotatec [0 1 0] (::a ::b))))))
+
+(deftest maybe-scale-fn
+  (testing "maybe-scale with its full neutral argument and one shape."
+    (is (= (maybe-scale [1 1 1] ::a)
+           `(::a))))
+  (testing "maybe-scale with its neutral argument and two shapes."
+    (is (= (maybe-scale [1 1 1] ::a ::b)
+           `(::a ::b))))
+  (testing "maybe-scale for a non-neutral argument and one shape."
+    (is (= (maybe-scale [1 1 2] ::a)
+           `(:scale [1 1 2] ::a))))
+  (testing "maybe-scale for a non-neutral argument and two shapes."
+    (is (= (maybe-scale [1 1 2] ::a ::b)
+           `(:scale [1 1 2] ::a ::b)))))
