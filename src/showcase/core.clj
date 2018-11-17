@@ -19,26 +19,32 @@
 
 (defn -main
   [& _]
-  (let [write (fn [[filename model]]
-                (let [scad (file "showcase" "scad" (str filename ".scad"))
-                      stl (file "showcase" "stl" (str filename ".stl"))]
-                  (make-parents scad)
-                  (spit scad (write-scad model))
-                  (make-parents stl)
-                  (if-not (zero? (:exit (sh "openscad" "-o" (str stl) (str scad))))
-                    (do
-                      (println "Rendering" stl "failed")
-                      (System/exit 1)))))
-        files [["nut-m6"
-                (threaded/nut :iso-size 6)]
+  (let [write
+          (fn [[filename model]]
+            (let [scad (file "showcase" "scad" (str filename ".scad"))
+                  stl (file "showcase" "stl" (str filename ".stl"))]
+              (make-parents scad)
+              (spit scad (write-scad model))
+              (make-parents stl)
+              (if-not (zero? (:exit (sh "openscad" "-o" (str stl) (str scad))))
+                (do
+                  (println "Rendering" stl "failed")
+                  (System/exit 1)))))
+        files [["nut-m3"
+                (threaded/nut :iso-size 3)]
+               ["nut-m3-dfm"
+                (threaded/nut :iso-size 3 :compensator (dfm/error-fn))]
                ["nut-m4"
                 (threaded/nut :iso-size 4)]
                ["nut-m4-dfm"
-                (threaded/nut :iso-size 4 :dfm-pair (dfm/symmetry))]
-               ["nut-m3"
-                (threaded/nut :iso-size 3)]
-               ["nut-m3-dfm"
-                (threaded/nut :iso-size 3 :dfm-pair (dfm/symmetry))]]]
+                (threaded/nut :iso-size 4 :compensator (dfm/error-fn))]
+               ["bolt-m4-socket"
+                (threaded/bolt :iso-size 4 :head-type :socket :drive-type :hex)]
+               ["bolt-m4-countersunk-dfm"
+                (threaded/bolt :iso-size 4 :unthreaded-length 5
+                               :head-type :countersunk
+                               :drive-type :hex :compensator (dfm/error-fn))]]]
+
      (doall (pmap write files))
      (System/exit 0)))
 

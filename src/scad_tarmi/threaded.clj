@@ -334,9 +334,9 @@
   Though a drive-type parameter is accepted, only a socket-cap-style hex
   drive is supported, and even that will be ignored on a negative."
   [& {:keys [iso-size head-type drive-type unthreaded-length threaded-length
-             dfm-pair negative]
+             compensator negative]
       :or {head-type :hex, unthreaded-length 0, threaded-length 10,
-           dfm-pair dfm/none}
+           compensator dfm/none}
       :as options}]
   {:pre [(spec/valid? ::iso-nominal iso-size)
          (spec/valid? ::head-type head-type)
@@ -345,16 +345,15 @@
           (merge options {:head-type head-type
                           :unthreaded-length unthreaded-length
                           :threaded-length threaded-length
-                          :dfm-pair dfm-pair})
+                          :compensator compensator})
         r (/ iso-size 2)
-        head-height (get-head-height iso-size head-type)
-        shrink ((:positive dfm-pair) iso-size)
-        enlarge ((:negative dfm-pair) iso-size)]
+        head-height (get-head-height iso-size head-type)]
     (if negative
-      (enlarge
-        (model/union
+      (model/union
+        (compensator (* 2 iso-size) {}
           (model/translate [0 0 (- (/ head-height 2))]
-            (bolt-head merged))
+            (bolt-head merged)))
+        (compensator iso-size {}
           (when (pos? unthreaded-length)
             (model/translate [0 0 (- (- head-height) (/ unthreaded-length 2))]
               (model/cylinder r unthreaded-length)))
@@ -366,34 +365,32 @@
                    :taper-fn bolt-taper)))))
       ;; Else a positive. Consider including a drive.
       (model/difference
-        (shrink
+        (compensator iso-size {:negative false}
           ;; Request no further scaling.
           (apply bolt (flatten (vec (merge merged
-                                      {:dfm-pair dfm/none :negative true})))))
+                                      {:compensator dfm/none :negative true})))))
         (when drive-type
-          (enlarge
+          (compensator iso-size {}
             (bolt-drive merged)))))))
 
 (defn nut
   "A single hex nut centred at [0 0 0]."
-  [& {:keys [iso-size height dfm-pair negative]
-      :or {dfm-pair dfm/none}}]
+  [& {:keys [iso-size height compensator negative]
+      :or {compensator dfm/none}}]
   {:pre [(spec/valid? ::iso-nominal iso-size)]}
-  (let [height (or height (get-datum iso-size :hex-nut-height))
-        shrink ((:positive dfm-pair) iso-size)
-        enlarge ((:negative dfm-pair) iso-size)]
+  (let [height (or height (get-datum iso-size :hex-nut-height))]
     (if negative
       ;; A convex model of a nut.
-      (enlarge
+      (compensator (get-datum iso-size :hex-head-long-diagonal) {}
         (hex-item iso-size height))
       ;; A more complete model.
       (model/difference
         ;; Recurse to make the positive model.
-        (shrink
-          ;; Do not pass on the dfm-pair; that could cause a double transform.
+        (compensator iso-size {}
+          ;; Do not pass on the compensator.
           (nut :iso-size iso-size :height height :negative true))
         ;; Cut out the threading.
-        (enlarge
+        (compensator iso-size {:negative false}
           (rod :iso-size iso-size :length height :taper-fn flare))))))
 
 (defn washer
