@@ -26,13 +26,15 @@
   [function arg]
   (if arg (partial function arg) (fn [& args] args)))
 
+(defn- all-zero [candidate] (every? zero? candidate))
+
 (defn- maybe-transform
   "Take a scad-clj function and an argument for which it does nothing.
   Return a corresponding function that will take a wider range of inputs and
   will return nil when such an input matches the neutral input given here."
-  [model-function neutral-arg]
+  [model-function neutral-predicate]
   (fn [arg & block]
-    (apply (clean model-function (when (not= arg neutral-arg) arg)) block)))
+    (apply (clean model-function (when-not (neutral-predicate arg) arg)) block)))
 
 (defn- maybe-boolean
   "Take a Boolean scad-clj function.
@@ -58,15 +60,15 @@
 
 (def maybe-rotate
   "A rotate element that drops out of OpenSCAD code when it would do nothing."
-  (maybe-transform model/rotate [0 0 0]))
+  (maybe-transform model/rotate all-zero))
 
 (def maybe-scale
   "A scale element that drops out when it would do nothing."
-  (maybe-transform model/scale [1 1 1]))
+  (maybe-transform model/scale #(= % [1 1 1])))
 
 (def maybe-translate
   "A translate element that drops out when it would do nothing."
-  (maybe-transform model/translate [0 0 0]))
+  (maybe-transform model/translate all-zero))
 
 (def maybe-union
   "A union element that drops out when it would do nothing."
