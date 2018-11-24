@@ -6,14 +6,11 @@
 
 (ns scad-tarmi.dfm
   (:require [clojure.spec.alpha :as spec]
-            [scad-tarmi.core :refer [maybe-scale]]))
+            [scad-tarmi.maybe :as maybe]))
 
 ;;;;;;;;;;;;;;
 ;; INTERNAL ;;
 ;;;;;;;;;;;;;;
-
-(spec/def ::accordion (spec/coll-of number? :min-count 1 :max-count 3))
-(spec/def ::tuplable (spec/or :num number? :tuple ::accordion))
 
 (defn- ratio [nominal error] (/ (- nominal error) nominal))
 
@@ -21,26 +18,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; INTERFACE FUNCTIONS ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn expand-xy-tuple
-  "Expand a number or short tuple of numbers to a 3-tuple of numbers,
-  emphasizing the first two (x and y) and letting z default to 1 when
-  a single number is provided."
-  [arg]
-  {:pre [(spec/valid? ::tuplable arg)]}
-  (let [[input-type _] (spec/conform ::tuplable arg)]
-    (case input-type
-      :num [arg arg 1]
-      :tuple
-        (case (count arg)
-          1 (expand-xy-tuple (first arg))
-          2 (let [[xy z] arg] [xy xy z])
-          arg))))
-
-(defn maybe-xy-scale
-  "A wrapper for maybe-scale. The first argument is expanded for the xy plane."
-  [factor & block]
-  (apply (partial maybe-scale (expand-xy-tuple factor)) block))
 
 (defn error-fn
   "Take an error: A measurement in mm of material added by a printer in the xy
@@ -88,7 +65,7 @@
   in this manner is typically difficult but saves on transformations in the
   OpenSCAD output, thus improving rendering performance.
 
-  Called with more arguments, the closure implements maybe-scale.
+  Called with more arguments, the closure implements scad-tarmi’s maybe/scale.
 
   Refer to the threaded module for example usage."
   ([] (error-fn (- 0.5)))
@@ -103,7 +80,7 @@
              :or {negative true, x true, y true, z false}} options
             n (ratio nominal (if negative negative-error positive-error))
             factors (vec (map #(if % n 1) [x y z]))]
-        (apply (partial maybe-scale factors) block))))))
+        (apply (partial maybe/scale factors) block))))))
 
 (def none
   "An error function that leaves no trace in OpenSCAD code."
