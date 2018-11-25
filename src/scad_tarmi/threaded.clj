@@ -1,4 +1,4 @@
-;;; ISO 262 fasteners and ISO 7089 washers.
+;;; ISO 262/4017 fasteners and ISO 7089 washers.
 
 (ns scad-tarmi.threaded
   (:require [clojure.spec.alpha :as spec]
@@ -133,6 +133,20 @@
                   {:nominal-diameter nominal-diameter
                    :requested-property key}))))))
 
+(defn head-height
+  "Get the height of an ISO bolt head.
+  This is exposed for predicting the results of the bolt function in this
+  module, specifically where the transition from head to body will occur."
+  [iso-size head-type]
+  {:pre [(spec/valid? ::iso-nominal iso-size)
+         (spec/valid? ::head-type head-type)]}
+  (datum iso-size
+    (case head-type
+      :hex :iso4017-hex-head-height-nominal
+      :socket :socket-height
+      :button :button-height
+      :countersunk :countersunk-height)))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;
 ;; INTERNAL FUNCTIONS ;;
@@ -146,23 +160,12 @@
       (model/with-fn 6
         (model/cylinder (/ diagonal 2) height)))))
 
-(defn- get-head-height
-  [iso-size head-type]
-  {:pre [(spec/valid? ::iso-nominal iso-size)
-         (spec/valid? ::head-type head-type)]}
-  (datum iso-size
-    (case head-type
-      :hex :iso4017-hex-head-height-nominal
-      :socket :socket-height
-      :button :button-height
-      :countersunk :countersunk-height)))
-
 (defn- bolt-head
   "A model of the head of a bolt, without a drive."
   [{:keys [iso-size head-type] :as options}]
   {:pre [(spec/valid? ::iso-nominal iso-size)
          (spec/valid? ::head-type head-type)]}
-  (let [height (get-head-height iso-size head-type)]
+  (let [height (head-height iso-size head-type)]
     (case head-type
       :hex
         (hex-item iso-size height)
@@ -187,7 +190,7 @@
   {:pre [(spec/valid? ::iso-nominal iso-size)
          (spec/valid? ::drive-type drive-type)]}
   (let [depth (or drive-recess-depth
-                  (/ (get-head-height iso-size head-type) 2))]
+                  (/ (head-height iso-size head-type) 2))]
     (model/translate [0 0 (/ depth -2)]
       (case drive-type
         :hex (hex-item iso-size depth
@@ -378,7 +381,7 @@
                           :threaded-length threaded-length
                           :compensator compensator})
         r (/ iso-size 2)
-        head-height (get-head-height iso-size head-type)]
+        head-height (head-height iso-size head-type)]
     (if negative
       (model/union
         (compensator (* 2 iso-size) {}
