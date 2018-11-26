@@ -152,6 +152,25 @@
 ;; INTERNAL FUNCTIONS ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn- bolt-length
+  "Infer the lengths of the unthreaded and threaded parts of a bolt."
+  [{:keys [total unthreaded threaded head] :as parameters}]
+  (case (map some? [total unthreaded threaded])
+    [true  true  true ] (if (= total (+ unthreaded threaded head))
+                          [unthreaded threaded]
+                          (throw
+                            (ex-info "Contradictory bolt length parameters"
+                                     {:parameters parameters})))
+    [true  true  false] [unthreaded (- total unthreaded head)]
+    [true  false false] [0 (- total head)]
+    [false false false] (throw
+                          (ex-info "Insufficient bolt length parameters"
+                                   {:parameters parameters}))
+    [false false true ] [0 threaded]
+    [false true  true ] [unthreaded threaded]
+    [true  false true ] [(- total threaded head) threaded]
+    [false true  false] [unthreaded 0]))
+
 (defn- hex-item
   [iso-size height & {:keys [measurement]
                       :or {measurement :hex-head-long-diagonal}}]
@@ -177,11 +196,11 @@
           (model/cylinder (/ diameter 2) height))
       :countersunk
         (let [diameter (datum iso-size :countersunk-diameter)
-              edge (Math/log iso-size)]
+              edge (/ (Math/log iso-size) 10)]
           (model/hull
-            (model/translate [0 0 (+ (/ edge -4) (/ height 2))]
-              (model/cylinder (/ diameter 2) (/ edge 2)))
-            (model/translate [0 0 (+ (/ edge -4) (/ height -2))]
+            (model/translate [0 0 (+ (/ edge -2) (/ height 2))]
+              (model/cylinder (/ diameter 2) edge))
+            (model/translate [0 0 (+ (/ edge -2) (/ height -2))]
               (model/cylinder (/ iso-size 2) edge)))))))
 
 (defn- bolt-drive
@@ -367,32 +386,35 @@
   nominal ISO size), unthreaded and threaded length parameters.
   Though a drive-type parameter is accepted, only a socket-cap-style hex
   drive is supported, and even that will be ignored on a negative."
-  [& {:keys [iso-size head-type drive-type unthreaded-length threaded-length
+  [& {:keys [iso-size head-type drive-type
+             total-length unthreaded-length threaded-length
              compensator negative]
-      :or {head-type :hex, unthreaded-length 0, threaded-length 10,
-           compensator dfm/none, negative false}
+      :or {head-type :hex, compensator dfm/none, negative false}
       :as options}]
   {:pre [(spec/valid? ::iso-nominal iso-size)
          (spec/valid? ::head-type head-type)
          (spec/valid? (spec/nilable ::head-type) head-type)]}
-  (let [merged
-          (merge options {:head-type head-type
-                          :unthreaded-length unthreaded-length
-                          :threaded-length threaded-length
-                          :compensator compensator})
-        r (/ iso-size 2)
-        head-height (head-height iso-size head-type)]
+  (let [hh (head-height iso-size head-type)
+        lengths (bolt-length
+                  {:total total-length, :unthreaded unthreaded-length,
+                   :threaded threaded-length, :head hh})
+        [unthreaded-length threaded-length] lengths
+        merged (merge options {:head-type head-type
+                               :unthreaded-length unthreaded-length
+                               :threaded-length threaded-length
+                               :compensator compensator})
+        r (/ iso-size 2)]
     (if negative
       (model/union
         (compensator (* 2 iso-size) {}
-          (model/translate [0 0 (- (/ head-height 2))]
+          (model/translate [0 0 (/ hh -2)]
             (bolt-head merged)))
         (compensator iso-size {}
           (when (pos? unthreaded-length)
-            (model/translate [0 0 (- (- head-height) (/ unthreaded-length 2))]
+            (model/translate [0 0 (- (- hh) (/ unthreaded-length 2))]
               (model/cylinder r unthreaded-length)))
           (when (pos? threaded-length)
-            (model/translate [0 0 (- (- (+ head-height unthreaded-length))
+            (model/translate [0 0 (- (- (+ hh unthreaded-length))
                                      (/ threaded-length 2))]
               (rod :iso-size iso-size
                    :length threaded-length

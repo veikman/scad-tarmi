@@ -39,11 +39,13 @@
                ["nut-m4-dfm"
                 (threaded/nut :iso-size 4 :compensator (dfm/error-fn))]
                ["bolt-m4-socket"
-                (threaded/bolt :iso-size 4 :head-type :socket :drive-type :hex)]
+                (threaded/bolt :iso-size 4, :head-type :socket,
+                               :drive-type :hex, :threaded-length 10,
+                               :unthreaded-length 5,)]
                ["bolt-m4-countersunk-dfm"
-                (threaded/bolt :iso-size 4 :unthreaded-length 5
-                               :head-type :countersunk
-                               :drive-type :hex :compensator (dfm/error-fn))]]]
+                (threaded/bolt :iso-size 4, :head-type :countersunk,
+                               :drive-type :hex, :total-length 10,
+                               :compensator (dfm/error-fn))]]]
 
      (doall (pmap write files))
      (System/exit 0)))
