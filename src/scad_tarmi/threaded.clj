@@ -181,27 +181,28 @@
 
 (defn- bolt-head
   "A model of the head of a bolt, without a drive."
-  [{:keys [iso-size head-type] :as options}]
+  [{:keys [iso-size head-type compensator] :as options}]
   {:pre [(spec/valid? ::iso-nominal iso-size)
          (spec/valid? ::head-type head-type)]}
   (let [height (head-height iso-size head-type)]
     (case head-type
       :hex
-        (hex-item iso-size height)
+        (compensator (datum iso-size :hex-head-long-diagonal) {}
+          (hex-item iso-size height))
       :socket
         (let [diameter (datum iso-size :socket-diameter)]
-          (model/cylinder (/ diameter 2) height))
+          (model/cylinder (/ (compensator diameter) 2) height))
       :button
         (let [diameter (datum iso-size :button-diameter)]
-          (model/cylinder (/ diameter 2) height))
+          (model/cylinder (/ (compensator diameter) 2) height))
       :countersunk
         (let [diameter (datum iso-size :countersunk-diameter)
-              edge (/ (Math/log iso-size) 10)]
+              edge (/ (Math/log iso-size) 2)]  ; Intentional exaggeration.
           (model/hull
             (model/translate [0 0 (+ (/ edge -2) (/ height 2))]
-              (model/cylinder (/ diameter 2) edge))
+              (model/cylinder (/ (compensator diameter) 2) edge))
             (model/translate [0 0 (+ (/ edge -2) (/ height -2))]
-              (model/cylinder (/ iso-size 2) edge)))))))
+              (model/cylinder (/ (compensator iso-size) 2) edge)))))))
 
 (defn- bolt-drive
   "A model of the thing you stick your bit in."
@@ -406,9 +407,8 @@
         r (/ iso-size 2)]
     (if negative
       (model/union
-        (compensator (* 2 iso-size) {}
-          (model/translate [0 0 (/ hh -2)]
-            (bolt-head merged)))
+        (model/translate [0 0 (/ hh -2)]
+          (bolt-head merged))
         (compensator iso-size {}
           (when (pos? unthreaded-length)
             (model/translate [0 0 (- (- hh) (/ unthreaded-length 2))]
