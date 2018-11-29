@@ -180,8 +180,16 @@
         (model/cylinder (/ diagonal 2) height)))))
 
 (defn- bolt-head
-  "A model of the head of a bolt, without a drive."
-  [{:keys [iso-size head-type compensator] :as options}]
+  "A model of the head of a bolt, without a drive.
+  This function takes an auxiliary ‘countersink-edge-fn’ which computes the
+  thickness of a countersunk head at its edge. The computed thickness will,
+  effectively, lengthen the head, potentially producing a negative that is too
+  shallow for the threaded portion of a real screw.
+  The default ‘countersink-edge-fn’ is a slight exaggeration intended
+  to make sure the head will not protrude with normal printing defects."
+  [{:keys [iso-size head-type countersink-edge-fn compensator]
+    :or {countersink-edge-fn (fn [iso-size] (/ (Math/log iso-size) 8))}
+    :as options}]
   {:pre [(spec/valid? ::iso-nominal iso-size)
          (spec/valid? ::head-type head-type)]}
   (let [height (head-height iso-size head-type)]
@@ -197,7 +205,7 @@
           (model/cylinder (/ (compensator diameter) 2) height))
       :countersunk
         (let [diameter (datum iso-size :countersunk-diameter)
-              edge (/ (Math/log iso-size) 2)]  ; Intentional exaggeration.
+              edge (countersink-edge-fn iso-size)]
           (model/hull
             (model/translate [0 0 (+ (/ edge -2) (/ height 2))]
               (model/cylinder (/ (compensator diameter) 2) edge))
