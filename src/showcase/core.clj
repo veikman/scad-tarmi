@@ -46,7 +46,6 @@
                 (threaded/bolt :iso-size 4, :head-type :countersunk,
                                :drive-type :hex, :total-length 10,
                                :compensator (dfm/error-fn))]]]
-
      (doall (pmap write files))
      (System/exit 0)))
 
