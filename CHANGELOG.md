@@ -1,7 +1,7 @@
 # Change log
 This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
-## [Unreleased]
+## Version 0.1.0
 ### New
 - Added “maybe” wrappers for `rotate`, `scale`, `translate`, `union`,
   `intersection`, `difference` and `polygon`.
