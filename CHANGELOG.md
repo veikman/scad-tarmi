@@ -4,7 +4,7 @@ This change log follows the conventions of [keepachangelog.com](http://keepachan
 ## [Unreleased]
 ### New
 - Added “maybe” wrappers for `rotate`, `scale`, `translate`, `union`,
-  `intersection` and `difference`.
+  `intersection`, `difference` and `polygon`.
 - Added a couple of functions for DFM.
 - Added threaded fasteners and a script showcasing a selection of these.
 - Added `long-hex-diagonal` for computing the long diagonal of a hexagon
