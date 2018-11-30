@@ -3,6 +3,8 @@
 This is a Clojure library of miscellaneous abstractions and conveniences for
 use in CAD work with `scad-clj`.
 
+[![Clojars Project](https://img.shields.io/clojars/v/scad-tarmi.svg)](https://clojars.org/scad-tarmi)
+
 The Lojban word *tarmi* refers to a conceptual shape.
 
 ## Usage
