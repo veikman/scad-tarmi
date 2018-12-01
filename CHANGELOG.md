@@ -1,6 +1,10 @@
 # Change log
 This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+## [Unreleased]
+### New
+- Added a `reckon` module for reasoning about a model.
+
 ## Version 0.1.0
 ### New
 - Added “maybe” wrappers for `rotate`, `scale`, `translate`, `union`,
