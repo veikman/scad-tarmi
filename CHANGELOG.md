@@ -4,6 +4,8 @@ This change log follows the conventions of [keepachangelog.com](http://keepachan
 ## [Unreleased]
 ### New
 - Added a `reckon` module for reasoning about a model.
+- Added an `abs` function for absolute values.
+- Added two functions for converting angles measured in different ways.
 
 ## Version 0.1.0
 ### New
