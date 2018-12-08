@@ -5,7 +5,8 @@
 ;;; OpenSCAD transformations.
 
 (ns scad-tarmi.reckon
-  (:require [clojure.core.matrix :refer [mmul]]))
+  (:require [clojure.core.matrix :refer [mmul]]
+            [scad-tarmi.core :refer [sin cos]]))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -23,12 +24,12 @@
   files."
   [[α β γ] position]
   (->> position
-       (mmul [[1                0                0]
-              [0                (Math/cos α)     (- (Math/sin α))]
-              [0                (Math/sin α)     (Math/cos α)]])
-       (mmul [[(Math/cos β)     0                (Math/sin β)]
-              [0                1                0]
-              [(- (Math/sin β)) 0                (Math/cos β)]])
-       (mmul [[(Math/cos γ)     (- (Math/sin γ)) 0]
-              [(Math/sin γ)     (Math/cos γ)     0]
-              [0                0                1]])))
+       (mmul [[1           0           0]
+              [0           (cos α)     (- (sin α))]
+              [0           (sin α)     (cos α)]])
+       (mmul [[(cos β)     0           (sin β)]
+              [0           1           0]
+              [(- (sin β)) 0           (cos β)]])
+       (mmul [[(cos γ)     (- (sin γ)) 0]
+              [(sin γ)     (cos γ)     0]
+              [0           0           1]])))
