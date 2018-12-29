@@ -13,7 +13,7 @@
 ;; INTERFACE FUNCTIONS ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def translate (partial map +))
+(def translate (partial mapv +))
 
 (defn rotate
   "Transform a set of coordinates as in rotation.
