@@ -1,7 +1,7 @@
 # `scad-tarmi`: Commonplace items for `scad-clj`
 
 This is a Clojure library of miscellaneous abstractions and conveniences for
-use in CAD work with `scad-clj`.
+use in CAD work with `[scad-clj](https://github.com/farrellm/scad-clj)`.
 
 [![Clojars Project](https://img.shields.io/clojars/v/scad-tarmi.svg)](https://clojars.org/scad-tarmi)
 
@@ -75,7 +75,9 @@ If you do intend to model an M6 nut to carve out negative space for a real nut,
 the call would be `(nut :iso-size 6 :negative true)`, a less complicated shape.
 
 Either way, you will need to use `scad-clj` to produce OpenSCAD code for the
-object. Check out [the showcase](src/showcase/core.clj) for a few examples.
+object. Check the [showcase code](src/showcase/core.clj) for examples of how
+to do that. A selection of the models produced by that code are shown
+[here](showcase/stl).
 
 ## Acknowledgements
 
@@ -86,7 +88,7 @@ by the author into the public domain.
 
 ## License
 
-Copyright © 2018 Viktor Eikman
+Copyright © 2018-2019 Viktor Eikman
 
 This software is distributed under the [Eclipse Public License](LICENSE-EPL),
 (EPL) v2.0 or any later version thereof. This software may also be made

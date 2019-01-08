@@ -1,5 +1,4 @@
-(ns scad-tarmi.core
-  (:require [scad-clj.model :as model]))
+(ns scad-tarmi.core)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; CONSTANTS AND SHORTCUTS ;;
