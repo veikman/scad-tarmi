@@ -1,7 +1,8 @@
 # `scad-tarmi`: Commonplace items for `scad-clj`
 
 This is a Clojure library of miscellaneous abstractions and conveniences for
-use in CAD work with `[scad-clj](https://github.com/farrellm/scad-clj)`.
+use in CAD work with Matthew Farrell’s
+[`scad-clj`](https://github.com/farrellm/scad-clj).
 
 [![Clojars Project](https://img.shields.io/clojars/v/scad-tarmi.svg)](https://clojars.org/scad-tarmi)
 
