@@ -2,7 +2,8 @@
 This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
 ## [Unreleased]
-Nothing yet.
+### New
+- Added “maybe” wrappers for `mirror` and `polyhedron`.
 
 ## [Version 0.2.0]
 ### New

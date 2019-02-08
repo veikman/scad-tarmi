@@ -19,19 +19,20 @@
 (defn- all-zero? [candidate] (every? zero? candidate))
 
 (defn- transformer
-  "Take a scad-clj function and an argument for which it does nothing.
-  Return a corresponding function that will take a wider range of inputs and
-  will return nil when such an input matches the neutral input given here."
+  "Take a scad-clj function and a predicate function for its neutral argument.
+  Return a corresponding function that will return nil when input matches the
+  predicate, else behave like the scad-clj function."
   [model-function neutral-predicate]
   (fn [arg & block]
     (apply (clean model-function (when-not (neutral-predicate arg) arg)) block)))
 
 (defn- shape
   "Like transformer but for scad-clj functions that produce shapes.
+  The neutral predicate takes all arguments passed to the closure.
   Where the neutral predicate is met, the closure will return nil."
   [model-function neutral-predicate]
   (fn [& args]
-    (when-not (neutral-predicate args) (apply model-function args))))
+    (when-not (apply neutral-predicate args) (apply model-function args))))
 
 (defn- geometric-boolean
   "Take a Boolean scad-clj function.
@@ -53,6 +54,8 @@
 
 (def scale (transformer model/scale #(= % [1 1 1])))
 
+(def mirror (transformer model/mirror all-zero?))
+
 (def translate (transformer model/translate all-zero?))
 
 (def union (geometric-boolean model/union))
@@ -61,4 +64,6 @@
 
 (def difference (geometric-boolean model/difference))
 
-(def polygon (transformer model/polygon #(empty? (first %))))
+(def polygon (shape model/polygon (fn [p & _] (empty? p))))
+
+(def polyhedron (shape model/polyhedron #(some empty? (take 2 %&))))
