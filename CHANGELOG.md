@@ -3,6 +3,7 @@ This change log follows the conventions of [keepachangelog.com](http://keepachan
 
 ## [Unreleased]
 ### New
+- Added a `util` namespace with a `loft` function.
 - Added “maybe” wrappers for `mirror` and `polyhedron`.
 
 ## [Version 0.2.0]
