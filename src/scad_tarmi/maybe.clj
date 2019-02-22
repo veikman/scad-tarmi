@@ -1,4 +1,4 @@
-;;; Version of scad-clj functions that drop out of OpenSCAD output when they
+;;; Versions of scad-clj functions that drop out of OpenSCAD output when they
 ;;; would do nothing to a model.
 
 (ns scad-tarmi.maybe

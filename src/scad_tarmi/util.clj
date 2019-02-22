@@ -1,4 +1,4 @@
-;;; Slightly-more-advanced utilities.
+;;; Slightly more advanced utilities.
 
 (ns scad-tarmi.core
   (:require [scad-clj.model :as model]

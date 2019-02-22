@@ -1,3 +1,5 @@
+;;; Mathematics. No dependence on SCAD utilities.
+
 (ns scad-tarmi.core)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -1,8 +1,6 @@
-;;; Utilites for design for manufacturability (DFM).
-;;; In this case, it’s mainly design for additive manufacturing (DFAM).
-
-;;; This module produces functions used elsewhere in scad-tarmi for
-;;; pre-empting 3D printer inaccuracies, particularly in the xy plane.
+;;; Utilities for design for manufacturability (DFM).
+;;; In this case, it’s mainly design for additive manufacturing (DFAM),
+;;; pre-empting 3D printer inaccuracies in the xy plane.
 
 (ns scad-tarmi.dfm
   (:require [clojure.spec.alpha :as spec]
