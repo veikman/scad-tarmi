@@ -4,7 +4,11 @@ This change log follows the conventions of [keepachangelog.com](http://keepachan
 ## [Unreleased]
 ### New
 - Added a `util` namespace with a `loft` function.
+- Added a `flex` namespace with functions that apply their namesakes from the
+  `reckon` or `maybe` modules, upon inspection of their arguments.
 - Added “maybe” wrappers for `mirror` and `polyhedron`.
+- Added a `unit-circle-point-coord` function.
+- Added some registered Clojure specs for Cartesian coordinates.
 
 ## [Version 0.2.0]
 ### New

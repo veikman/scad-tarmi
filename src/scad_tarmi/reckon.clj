@@ -1,7 +1,8 @@
 ;;; Utilites for reasoning about a model, reckoning where things will end up.
 
 ;;; All functions in this module take and return 3-tuples of numbers
-;;; representing coordinates, rather than OpenSCAD objects, but otherwise do
+;;; representing coordinates, rather than OpenSCAD objects, and they expect
+;;; only one item rather than a variable-length block. They otherwise do
 ;;; the work of the scad-clj transformations they are named after.
 
 (ns scad-tarmi.reckon
