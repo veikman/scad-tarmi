@@ -4,11 +4,6 @@
             [scad-tarmi.flex :as flex]))
 
 (deftest flex-translate-fn
-  (testing "flex/translate with parameters only."
-    (is (= (flex/translate [0 0 0])
-           [0 0 0]))
-    (is (= (flex/translate [0 2 0])
-           [0 2 0])))
   (testing "flex/translate with Cartesian inputs."
     (is (= (flex/translate [0 0 0] [0 0 0])
            [0 0 0]))

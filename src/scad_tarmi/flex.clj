@@ -14,13 +14,10 @@
 (defn- flex-fn
   "Produce a function that applies one of two subject functions."
   [reckon-fn else-fn]
-  (fn closure
-    ([parameters]  ; Default to neutral Cartesian input.
-     (closure parameters [0 0 0]))
-    ([parameters item]
-     (if (spec/valid? ::core/point-2d-3d item)
-       (reckon-fn parameters item)
-       (else-fn parameters item)))))
+  (fn [parameters item]
+    (if (spec/valid? ::core/point-2d-3d item)
+      (reckon-fn parameters item)
+      (else-fn parameters item))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;
