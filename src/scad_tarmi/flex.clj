@@ -15,7 +15,7 @@
   "Produce a function that applies one of two subject functions."
   [reckon-fn else-fn]
   (fn [parameters item]
-    (if (spec/valid? ::core/point-2d-3d item)
+    (if (spec/valid? ::core/point-2-3d item)
       (reckon-fn parameters item)
       (else-fn parameters item))))
 

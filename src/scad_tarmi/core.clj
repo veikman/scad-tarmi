@@ -22,12 +22,27 @@
 
 (spec/def ::point-2d (spec/coll-of number? :count 2))
 (spec/def ::point-3d (spec/coll-of number? :count 3))
-(spec/def ::point-2d-3d (spec/or :two ::point-2d :three ::point-3d))
+(spec/def ::point-2-3d (spec/or :two ::point-2d :three ::point-3d))
+
+(spec/def ::point-coll-2d (spec/coll-of ::point-2d))
+(spec/def ::point-coll-3d (spec/coll-of ::point-3d))
+(spec/def ::point-coll-2-3d (spec/or :two ::point-coll-2d
+                                     :three ::point-coll-3d))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; INTERFACE FUNCTIONS ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn mean
+  "The arithmetic mean of one or more planar 2D or 3D Cartesian coordinates."
+  [& coord]
+  {:pre [(spec/valid? ::point-coll-2-3d coord)]
+   :post [(spec/valid? ::point-2-3d %)]}
+  (let [[type values] (spec/conform ::point-coll-2-3d coord)
+        n (count values)
+        divisor (case type :two [n n], :three [n n n])]
+    (mapv / (apply (partial map +) values) divisor)))
 
 (defn long-hex-diagonal
   "The “long diagonal” of a hexagon, computed from the “short” or flat-to-flat

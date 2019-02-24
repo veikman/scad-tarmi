@@ -7,6 +7,7 @@ This change log follows the conventions of [keepachangelog.com](http://keepachan
 - Added a `flex` namespace with functions that apply their namesakes from the
   `reckon` or `maybe` modules, upon inspection of their arguments.
 - Added “maybe” wrappers for `mirror` and `polyhedron`.
+- Added a `mean` function.
 - Added a `unit-circle-point-coord` function.
 - Added some registered Clojure specs for Cartesian coordinates.
 
