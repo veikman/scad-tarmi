@@ -1,6 +1,6 @@
 ;;; Slightly more advanced utilities.
 
-(ns scad-tarmi.core
+(ns scad-tarmi.util
   (:require [scad-clj.model :as model]
             [scad-tarmi.maybe :as maybe]))
 
