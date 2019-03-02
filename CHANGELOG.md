@@ -3,7 +3,7 @@ This change log follows the conventions of [keepachangelog.com](http://keepachan
 
 ## [Unreleased]
 ### New
-- Added a `util` namespace with a `loft` function.
+- Added a `util` namespace with `loft` and `radiate` functions.
 - Added a `flex` namespace with functions that apply their namesakes from the
   `reckon` or `maybe` modules, upon inspection of their arguments.
 - Added “maybe” wrappers for `mirror` and `polyhedron`.

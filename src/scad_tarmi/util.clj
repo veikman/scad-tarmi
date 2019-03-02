@@ -21,5 +21,22 @@
   ([chunk-size block]
    (loft chunk-size 1 block))
   ([chunk-size step block]
-   (apply maybe/union
-     (map (partial apply model/hull) (partition chunk-size step block)))))
+   {:pre [(integer? chunk-size)
+          (not (zero? chunk-size))
+          (integer? step)
+          (not (zero? step))]}
+   (cond
+     ;; If no shapes are passed return nil.
+     (empty? block) nil
+     ;; If one shape is passed, return it.
+     (= 1 (count block)) (first block)
+     ;; Hull other short input (partitioning would return an empty list).
+     (> chunk-size (count block)) (apply model/hull block)
+     :else
+       (apply maybe/union
+         (map (partial apply model/hull) (partition chunk-size step block))))))
+
+(defn radiate
+  "Link a series of shapes through a single, central shape."
+  [hub spokes]
+  (loft 2 2 (concat [hub] (interpose hub spokes))))
