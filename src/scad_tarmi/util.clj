@@ -39,4 +39,4 @@
 (defn radiate
   "Link a series of shapes through a single, central shape."
   [hub spokes]
-  (loft 2 2 (concat [hub] (interpose hub spokes))))
+  (loft 2 2 (list* hub (interpose hub spokes))))
