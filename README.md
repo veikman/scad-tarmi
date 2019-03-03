@@ -13,9 +13,21 @@ The Lojban word *tarmi* refers to a conceptual shape.
 The [`core`](src/scad_tarmi/core.clj) module is trivial, meant only to reduce
 boilerplate.
 
+The [`util`](src/scad_tarmi/util.clj) module contains a few utilities that
+leverage the power of Clojure to do fairly common CAD operations with OpenSCAD
+primitives. It has a `loft` function, but please read the fine print.
+
+### Three families of drop-in replacements
+
 The [`maybe`](src/scad_tarmi/maybe.clj) module is very simple: It carries
 drop-in replacements for `scad-clj` functions that will produce as little
 output as possible, for slightly shorter OpenSCAD artefacts.
+
+The [`reckon`](src/scad_tarmi/reckon.clj) and [`flex`](src/scad_tarmi/flex.clj)
+modules also contain drop-in replacements, but for the purpose of reasoning
+about what a model will look like. `reckon` has numeric versions of OpenSCAD
+operations. `flex` uses either `reckon` or standard `scad-clj` functions
+depending on input.
 
 ### Design for manufacturability
 
