@@ -45,6 +45,11 @@
              (hull (circle 1) (circle 2) (circle 3))
              (hull (circle 2) (circle 3) (circle 4)))))))
 
+(deftest filtered-loft
+  (testing "the loft function with a nil element."
+    (is (= (util/loft [(circle 1) (when false (circle 2))])
+           (circle 1)))))
+
 (deftest radiate
   (testing "the radiate function with an empty sequence."
     (is (= (util/radiate (circle 1) [])

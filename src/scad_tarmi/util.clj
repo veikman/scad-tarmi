@@ -25,16 +25,19 @@
           (not (zero? chunk-size))
           (integer? step)
           (not (zero? step))]}
-   (cond
-     ;; If no shapes are passed return nil.
-     (empty? block) nil
-     ;; If one shape is passed, return it.
-     (= 1 (count block)) (first block)
-     ;; Hull other short input (partitioning would return an empty list).
-     (> chunk-size (count block)) (apply model/hull block)
-     :else
-       (apply maybe/union
-         (map (partial apply model/hull) (partition chunk-size step block))))))
+   (let [block (remove nil? block)
+         n (count block)]
+     (cond
+       ;; If no shapes are passed return nil.
+       (zero? n) nil
+       ;; If one shape is passed, return it.
+       (= 1 n) (first block)
+       ;; Hull other short input (partitioning would return an empty list).
+       (> chunk-size n) (apply model/hull block)
+       :else
+         (apply maybe/union
+           (map (partial apply model/hull)
+                (partition chunk-size step block)))))))
 
 (defn radiate
   "Link a series of shapes through a single, central shape."
