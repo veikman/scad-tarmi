@@ -2,6 +2,9 @@
 This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
 ## [Unreleased]
+Nothing yet.
+
+## [Version 0.3.0]
 ### New
 - Added a `util` namespace with `loft` and `radiate` functions.
 - Added a `flex` namespace with functions that apply their namesakes from the
@@ -27,5 +30,6 @@ This change log follows the conventions of [keepachangelog.com](http://keepachan
 - Added a handful of constants and abbreviations of dubious value:
   √, sin, cos, π and τ.
 
-[Unreleased]: https://github.com/veikman/scad-tarmi/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/veikman/scad-tarmi/compare/v0.3.0...HEAD
+[Version 0.3.0]: https://github.com/veikman/scad-tarmi/compare/v0.2.0...v0.3.0
 [Version 0.2.0]: https://github.com/veikman/scad-tarmi/compare/v0.1.0...v0.2.0
