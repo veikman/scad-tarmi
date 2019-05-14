@@ -91,8 +91,9 @@
                         :button  ; Partial (low, smooth-edged) socket cap.
                         :countersunk}) ; Flat head tapering toward the bolt.
 
-;; Supported types of bolt drives:
+;; Supported types of bolt drives and points:
 (spec/def ::drive-type #{:hex})
+(spec/def ::point-type #{:cone})
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -171,6 +172,12 @@
     [true  false true ] [(- total threaded head) threaded]
     [false true  false] [unthreaded 0]))
 
+(defn- bolt-inner-radius
+  "The inner radius of a piece of threading, meaning the distance from the
+  center of a threaded rod to the bottom of a valley in its threading."
+  [{:keys [outer-diameter pitch angle] :or {angle 1.0472}}]
+  (- (/ outer-diameter 2) (/ pitch (* 2 (/ (cos angle) (sin angle))))))
+
 (defn- hex-item
   [iso-size height & {:keys [measurement]
                       :or {measurement :hex-head-long-diagonal}}]
@@ -238,16 +245,18 @@
   defaults to ISO 262’s 60 degrees, approximated by 1.0472 radians. For
   easier printing, consider a lower, standards-noncompliant value. The value
   will determine the ratio between the inner and outer diameters of the model.
+  It’s honoured in the bolt-inner-radius function.
 
   The ‘resolution’ parameter affects the number of edges of the thread per
   revolution of the helix: A higher number gives a more detailed model."
-  [{:keys [outer-diameter length pitch angle resolution taper-fn]
-    :or {angle 1.0472, resolution 1, taper-fn (fn [& _] (fn [& a] a))}}]
+  [{:keys [outer-diameter length pitch resolution taper-fn]
+    :or {resolution 1, taper-fn (fn [& _] (fn [& a] a))}
+    :as options}]
   {:pre [(number? outer-diameter)
          (number? length)
          (number? pitch)]}
   (let [rₒ (/ outer-diameter 2)
-        rᵢ (- rₒ (/ pitch (* 2 (/ (cos angle) (sin angle)))))
+        rᵢ (bolt-inner-radius options)
         n-revolutions (+ (int (/ length pitch)) 2)  ; Amount of full turns.
         n-edges (Math/floor (* resolution τ rₒ))  ; Edges per revolution.
         θ (/ τ n-edges)  ; Angle describing each outer edge.
@@ -310,6 +319,15 @@
   (let [floor (- overshoot)
         ceiling (+ limit overshoot)]
     (fn [coordinate] (max floor (min ceiling coordinate)))))
+
+(defn- cone
+  "A trivial conical point to a bolt. The characteristics of the cone
+  follow ISO 7434 (i.e. 90º angle, assuming a long screw; the tip is not
+  blunted), but it’s not intended for making slotted set screws, just to
+  prevent slicing software from building support inside negatives in the
+  bottom of an object, where support is difficult to remove."
+  [{:keys [outer-diameter] :as options}]
+  (model/cylinder [0 (bolt-inner-radius options)] (/ outer-diameter 2)))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -392,23 +410,29 @@
   "A model of an ISO metric bolt.
   The very top of the head sits at [0 0 0] with the bolt pointing down.
   The total length of the bolt is the sum of head height (computed from
-  nominal ISO size), unthreaded and threaded length parameters.
+  nominal ISO size), unthreaded and threaded length parameters, plus an
+  optional point.
   Though a drive-type parameter is accepted, only a socket-cap-style hex
-  drive is supported, and even that will be ignored on a negative."
-  [& {:keys [iso-size head-type drive-type
+  drive is supported, and even that will be ignored on a negative.
+  Likewise, though a point-type parameter is accepted, the only implemented
+  option beyond the default flat point is a cone."
+  [& {:keys [iso-size pitch head-type drive-type point-type
              total-length unthreaded-length threaded-length
              compensator negative]
       :or {head-type :hex, compensator dfm/none, negative false}
       :as options}]
   {:pre [(spec/valid? ::iso-nominal iso-size)
-         (spec/valid? ::head-type head-type)
-         (spec/valid? (spec/nilable ::head-type) head-type)]}
+         (spec/valid? (spec/nilable ::head-type) head-type)
+         (spec/valid? (spec/nilable ::point-type) point-type)]}
   (let [hh (head-height iso-size head-type)
+        pitch (or pitch (datum iso-size :thread-pitch-coarse))
         lengths (bolt-length
                   {:total total-length, :unthreaded unthreaded-length,
                    :threaded threaded-length, :head hh})
         [unthreaded-length threaded-length] lengths
-        merged (merge options {:head-type head-type
+        merged (merge options {:outer-diameter iso-size
+                               :pitch pitch
+                               :head-type head-type
                                :unthreaded-length unthreaded-length
                                :threaded-length threaded-length
                                :compensator compensator})
@@ -422,11 +446,16 @@
             (model/translate [0 0 (- (- hh) (/ unthreaded-length 2))]
               (model/cylinder r unthreaded-length)))
           (when (pos? threaded-length)
-            (model/translate [0 0 (- (- (+ hh unthreaded-length))
-                                     (/ threaded-length 2))]
+            (model/translate
+              [0 0 (- (- (+ hh unthreaded-length)) (/ threaded-length 2))]
               (rod :iso-size iso-size
                    :length threaded-length
-                   :taper-fn bolt-taper)))))
+                   :taper-fn bolt-taper)))
+          (when (= point-type :cone)
+            (model/translate
+              [0 0 (- (- (+ hh unthreaded-length threaded-length))
+                      (/ (bolt-inner-radius merged) 2))]
+              (cone merged)))))
       ;; Else a positive. Consider including a drive.
       (maybe/difference
         (compensator iso-size {:negative false}

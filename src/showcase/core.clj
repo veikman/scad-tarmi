@@ -41,7 +41,7 @@
                ["bolt-m4-socket"
                 (threaded/bolt :iso-size 4, :head-type :socket,
                                :drive-type :hex, :threaded-length 10,
-                               :unthreaded-length 5,)]
+                               :unthreaded-length 5)]
                ["bolt-m4-countersunk-dfm"
                 (threaded/bolt :iso-size 4, :head-type :countersunk,
                                :drive-type :hex, :total-length 10,

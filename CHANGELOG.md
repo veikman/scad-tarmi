@@ -4,6 +4,12 @@ This change log follows the conventions of [keepachangelog.com](http://keepachan
 ## [Unreleased]
 Nothing yet.
 
+## [Version 0.4.0]
+### New
+- Added an optional `point-type` parameter to `threaded/bolt`. It takes one
+  value, `:cone` and leaves the point of the bolt flat when omitted.
+- Added a “maybe” wrapper for `hull`.
+
 ## [Version 0.3.0]
 ### New
 - Added a `util` namespace with `loft` and `radiate` functions.
@@ -30,6 +36,7 @@ Nothing yet.
 - Added a handful of constants and abbreviations of dubious value:
   √, sin, cos, π and τ.
 
-[Unreleased]: https://github.com/veikman/scad-tarmi/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/veikman/scad-tarmi/compare/v0.4.0...HEAD
+[Version 0.4.0]: https://github.com/veikman/scad-tarmi/compare/v0.3.0...v0.4.0
 [Version 0.3.0]: https://github.com/veikman/scad-tarmi/compare/v0.2.0...v0.3.0
 [Version 0.2.0]: https://github.com/veikman/scad-tarmi/compare/v0.1.0...v0.2.0

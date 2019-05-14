@@ -64,6 +64,8 @@
 
 (def difference (geometric-boolean model/difference))
 
+(def hull (geometric-boolean model/hull))
+
 (def polygon (shape model/polygon (fn [p & _] (empty? p))))
 
 (def polyhedron (shape model/polyhedron #(some empty? (take 2 %&))))
