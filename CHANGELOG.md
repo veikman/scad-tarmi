@@ -2,12 +2,14 @@
 This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
 ## [Unreleased]
-Nothing yet.
+### Changed
+- In addition to its previous behaviour, `maybe/translate` will now absorb
+  child elements that are single translations, further simplifying output.
 
 ## [Version 0.4.0]
 ### New
 - Added an optional `point-type` parameter to `threaded/bolt`. It takes one
-  value, `:cone` and leaves the point of the bolt flat when omitted.
+  value, `:cone`, and leaves the point of the bolt flat when omitted.
 - Added a “maybe” wrapper for `hull`.
 
 ## [Version 0.3.0]

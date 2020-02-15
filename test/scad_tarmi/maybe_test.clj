@@ -1,5 +1,5 @@
 (ns scad-tarmi.maybe-test
-  (:require [clojure.test :refer :all]
+  (:require [clojure.test :refer [deftest testing is]]
             [scad-clj.model :as reference]
             [scad-tarmi.maybe :as maybe]))
 
@@ -19,6 +19,13 @@
            `(:mirror [0 0 0] ::a)))
     (is (= (reference/mirror [0 0 0] ::a ::b)
            `(:mirror [0 0 0] ::a ::b))))
+  (testing "translate’s original behaviour."
+    (is (= (reference/translate [0 0 0] ::a)
+           `(:translate [0 0 0] ::a)))
+    (is (= (reference/translate [0 0 0] ::a ::b)
+           `(:translate [0 0 0] ::a ::b)))
+    (is (= (reference/translate [0 0 0] (reference/translate [1 0 0] ::a ::b))
+           `(:translate [0 0 0] (:translate [1 0 0] ::a ::b)))))
   (testing "polygon’s original behaviour."  ; With idiosyncrasies.
     (is (= (reference/polygon [[0 0]])
            `(:polygon {:points [[0 0]]})))
@@ -46,10 +53,16 @@
            `(::a ::b))))
   (testing "maybe/rotate for a non-neutral argument and one shape."
     (is (= (maybe/rotate [0 0 1] ::a)
+           (reference/rotate [0 0 1] ::a)
            `(:rotatec [0 0 1] (::a)))))
   (testing "maybe/rotate for a non-neutral argument and two shapes."
     (is (= (maybe/rotate [0 1 0] ::a ::b)
-           `(:rotatec [0 1 0] (::a ::b))))))
+           `(:rotatec [0 1 0] (::a ::b)))))
+  (testing "maybe/rotate on a more proper sphere."
+    (is (= (maybe/rotate [0 0 0] (reference/sphere 1))
+           `((:sphere {:r 1}))))
+    (is (= (maybe/rotate [0 0 1] (reference/sphere 1))
+           `(:rotatec [0 0 1] ((:sphere {:r 1})))))))
 
 (deftest maybe-scale-fn
   (testing "maybe/scale with its full neutral argument and one shape."
@@ -78,6 +91,36 @@
   (testing "maybe/mirror for a non-neutral argument and two shapes."
     (is (= (maybe/mirror [-1 0 0] ::a ::b)
            `(:mirror [-1 0 0] ::a ::b)))))
+
+(deftest maybe-translate-fn
+  (testing "maybe/translate with its neutral argument and one shape."
+    (is (= (maybe/translate [0 0 0] ::a)
+           `(::a))))
+  (testing "maybe/translate with its neutral argument and two shapes."
+    (is (= (maybe/translate [0 0 0] ::a ::b)
+           `(::a ::b))))
+  (testing "maybe/translate for a non-neutral argument and one shape."
+    (is (= (maybe/translate [-1 0 0] ::a)
+           (reference/translate [-1 0 0] ::a)
+           `(:translate [-1 0 0] ::a))))
+  (testing "maybe/translate for a non-neutral argument and two shapes."
+    (is (= (maybe/translate [-1 0 0] ::a ::b)
+           `(:translate [-1 0 0] ::a ::b))))
+  (testing "maybe/translate absorbing child translations at need."
+    (is (= (maybe/translate [0 1 0] (reference/translate [0 1 0] ::a))
+           `(:translate [0 2 0] ::a)))
+    (is (= (maybe/translate [0 0 0] (reference/translate [0 1 0] ::a))
+           `(:translate [0 1 0] ::a)))
+    (is (= (maybe/translate [0 1 0] (reference/translate [0 0 0] ::a))
+           `(:translate [0 1 0] ::a)))
+    (is (= (maybe/translate [0 0 0] (reference/translate [0 0 0] ::a))
+           `(::a)))
+    (is (= (maybe/translate [0 1 0] (maybe/translate [0 1 0] ::a))
+           `(:translate [0 2 0] ::a)))
+    (is (= (maybe/translate [0 1 0] (maybe/rotate [0 1 0] ::a))
+           `(:translate [0 1 0] ~(reference/rotate [0 1 0] ::a))))
+    (is (= (maybe/translate [0 0 0] (reference/rotate [0 1 0] ::a))
+           (list (reference/rotate [0 1 0] ::a))))))
 
 (deftest maybe-polygon-fn
   (testing "maybe/polygon with its neutral argument only."

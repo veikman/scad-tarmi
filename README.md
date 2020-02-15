@@ -21,7 +21,9 @@ primitives. It has a `loft` function, but please read the fine print.
 
 The [`maybe`](src/scad_tarmi/maybe.clj) module is very simple: It carries
 drop-in replacements for `scad-clj` functions that will produce as little
-output as possible, for slightly shorter OpenSCAD artefacts.
+output as possible, for slightly shorter OpenSCAD artefacts. The `maybe`
+version of `translate` will compact a series of translations into one
+operation.
 
 The [`reckon`](src/scad_tarmi/reckon.clj) and [`flex`](src/scad_tarmi/flex.clj)
 modules also contain drop-in replacements, but for the purpose of reasoning
@@ -101,7 +103,7 @@ by the author into the public domain.
 
 ## License
 
-Copyright © 2018-2019 Viktor Eikman
+Copyright © 2018-2020 Viktor Eikman
 
 This software is distributed under the [Eclipse Public License](LICENSE-EPL),
 (EPL) v2.0 or any later version thereof. This software may also be made

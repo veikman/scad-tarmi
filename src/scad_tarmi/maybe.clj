@@ -10,7 +10,10 @@
 
 (defn- clean
   "Return a closure over passed function if its argument is truthy.
-  Else return a variary identity function.
+  Else return a variary identity function. Notice this function is not perfect;
+  just like scad-clj, it will return a list regardless of whether it’s given
+  one or more arguments. If scad-clj’s behaviour changes, scad-tarmi should change
+  to match the upstream.
   The purpose of this function is to filter out, in the Clojure layer, those
   elements of OpenSCAD output that would be no-ops."
   [function arg]
@@ -56,7 +59,19 @@
 
 (def mirror (transformer model/mirror all-zero?))
 
-(def translate (transformer model/translate all-zero?))
+(let [plain (transformer model/translate all-zero?)]
+  (defn translate
+    "Fold child translation operations into the present one."
+    [arg & block]
+    (if (and (= (count block) 1) (seq? (first block)))
+      ;; There is one child operation.
+      (let [[c-op c-arg & c-rest] (first block)]
+        (if (and (= c-op :translate) (= (count c-rest) 1))
+          ;; Merge the two translation operations, recursing.
+          (apply (partial translate (mapv + arg c-arg)) c-rest)
+      ;; In all other cases, apply the ordinary transformer.
+          (apply (partial plain arg) block)))
+      (apply (partial plain arg) block))))
 
 (def union (geometric-boolean model/union))
 
