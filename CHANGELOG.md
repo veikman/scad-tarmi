@@ -2,7 +2,10 @@
 This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
 ## [Unreleased]
-### Changed
+### New
+- Added a Boolean `threaded` parameter to `bolt` and `rod` functions, enabling
+  negatives of threaded fasteners with a diameter suited to tapping the threads
+  with standard tools instead of printing the threads.
 - In addition to its previous behaviour, `maybe/translate` will now absorb
   child elements that are single translations, further simplifying output.
 

@@ -72,7 +72,8 @@ passed to a compensator should be enlarged.
 ### Threaded fasteners
 
 The [`threaded`](src/scad_tarmi/threaded.clj) module describes threaded
-fasteners using the `core`, `maybe` and `dfm` modules.
+fasteners, including nuts and bolts, using the `core`, `maybe` and `dfm`
+modules.
 
 If in your `ns` declaration you `(:require [scad-tarmi.threaded :refer [nut]])`,
 you can then call `(nut :iso-size 6)` for an ISO 262 M6 hex nut. Its height
@@ -88,6 +89,9 @@ in the assembly of your product.
 
 If you do intend to model an M6 nut to carve out negative space for a real nut,
 the call would be `(nut :iso-size 6 :negative true)`, a less complicated shape.
+When you need a model of a bolt for a hole that you intend to tap yourself,
+pass both `:negative true` and `:threaded false` to the corresponding `bolt`
+function.
 
 Either way, you will need to use `scad-clj` to produce OpenSCAD code for the
 object. Check the [showcase code](src/showcase/core.clj) for examples of how

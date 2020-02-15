@@ -176,6 +176,7 @@
   "The inner radius of a piece of threading, meaning the distance from the
   center of a threaded rod to the bottom of a valley in its threading."
   [{:keys [outer-diameter pitch angle] :or {angle 1.0472}}]
+  {:pre [(number? outer-diameter) (number? pitch) (number? angle)]}
   (- (/ outer-diameter 2) (/ pitch (* 2 (/ (cos angle) (sin angle))))))
 
 (defn- hex-item
@@ -395,15 +396,27 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn rod
-  "A threaded rod centred at [0 0 0]."
-  [& {:keys [iso-size taper-fn compensator negative]
-      :or {taper-fn rounding-taper, compensator dfm/none, negative false}
+  "A rod centred at [0 0 0].
+  By default, this is a threaded rod. However, if the “threaded” keyword
+  parameter is false, the rod will instead be a plain cylinder. If marked
+  as negative, such an unthreaded rod will be shrunk for tapping the hole
+  it makes, after printing. Otherwise, it will be left at regular DFM-nominal
+  size for threading with a die."
+  [& {:keys [iso-size length taper-fn threaded compensator negative]
+      :or {taper-fn rounding-taper, threaded true, compensator dfm/none,
+           negative false}
       :as options}]
   {:pre [(spec/valid? ::iso-nominal iso-size)]}
-  (compensator iso-size {:negative negative}
-    (thread (merge options {:outer-diameter iso-size
-                            :pitch (datum iso-size :thread-pitch-coarse)
-                            :taper-fn taper-fn}))))
+  (let [options (merge {:outer-diameter iso-size
+                        :pitch (datum iso-size :thread-pitch-coarse)
+                        :taper-fn taper-fn}
+                       options)]
+    (compensator iso-size {:negative negative}
+      (if threaded
+        (thread options)
+        (model/cylinder
+          (if negative (bolt-inner-radius options) (/ iso-size 2))
+          length)))))
 
 (defn bolt
   "A model of an ISO metric bolt.
@@ -415,10 +428,10 @@
   drive is supported, and even that will be ignored on a negative.
   Likewise, though a point-type parameter is accepted, the only implemented
   option beyond the default flat point is a cone."
-  [& {:keys [iso-size pitch head-type drive-type point-type
+  [& {:keys [iso-size pitch head-type drive-type point-type threaded
              total-length unthreaded-length threaded-length
              compensator negative]
-      :or {head-type :hex, compensator dfm/none, negative false}
+      :or {head-type :hex, threaded true, compensator dfm/none, negative false}
       :as options}]
   {:pre [(spec/valid? ::iso-nominal iso-size)
          (spec/valid? (spec/nilable ::head-type) head-type)
@@ -449,7 +462,9 @@
               [0 0 (- (- (+ hh unthreaded-length)) (/ threaded-length 2))]
               (rod :iso-size iso-size
                    :length threaded-length
-                   :taper-fn bolt-taper)))
+                   :taper-fn bolt-taper
+                   :threaded threaded
+                   :negative negative)))
           (when (= point-type :cone)
             (model/translate
               [0 0 (- (- (+ hh unthreaded-length threaded-length))
