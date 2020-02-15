@@ -2,12 +2,18 @@
 This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
 ## [Unreleased]
+### Changed
+- Marked parameter validation specs in `scad-tarmi.threaded` as deprecated.
+  Preferred specs are available in `scad-tarmi.threaded.schema`.
+
 ### New
 - Added a Boolean `threaded` parameter to `bolt` and `rod` functions, enabling
   negatives of threaded fasteners with a diameter suited to tapping the threads
   with standard tools instead of printing the threads.
 - In addition to its previous behaviour, `maybe/translate` will now absorb
   child elements that are single translations, further simplifying output.
+- Added a `schema` module for parameters to `threaded` functions, with parsers
+  and a new composite spec for the `bolt` function.
 
 ## [Version 0.4.0]
 ### New
