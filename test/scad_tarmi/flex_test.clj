@@ -1,5 +1,5 @@
 (ns scad-tarmi.flex-test
-  (:require [clojure.test :refer :all]
+  (:require [clojure.test :refer [deftest testing is]]
             [scad-clj.model :as reference]
             [scad-tarmi.flex :as flex]))
 

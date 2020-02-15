@@ -195,8 +195,7 @@
   The default ‘countersink-edge-fn’ is a slight exaggeration intended
   to make sure the head will not protrude with normal printing defects."
   [{:keys [iso-size head-type countersink-edge-fn compensator]
-    :or {countersink-edge-fn (fn [iso-size] (/ (Math/log iso-size) 8))}
-    :as options}]
+    :or {countersink-edge-fn (fn [iso-size] (/ (Math/log iso-size) 8))}}]
   {:pre [(spec/valid? ::iso-nominal iso-size)
          (spec/valid? ::head-type head-type)]}
   (let [height (head-height iso-size head-type)]
@@ -397,7 +396,7 @@
 
 (defn rod
   "A threaded rod centred at [0 0 0]."
-  [& {:keys [iso-size length taper-fn compensator negative]
+  [& {:keys [iso-size taper-fn compensator negative]
       :or {taper-fn rounding-taper, compensator dfm/none, negative false}
       :as options}]
   {:pre [(spec/valid? ::iso-nominal iso-size)]}
@@ -494,5 +493,5 @@
         od (or outer-diameter (datum iso-size :iso7089-outer-diameter))
         thickness (or height (datum iso-size :iso7089-thickness))]
     (model/difference
-      (model/cylinder (/ outer-diameter 2) thickness);
-      (model/cylinder (/ inner-diameter 2) (+ thickness 1)))))
+      (model/cylinder (/ od 2) thickness)
+      (model/cylinder (/ id 2) (+ thickness 1)))))

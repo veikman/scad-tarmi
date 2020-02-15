@@ -1,6 +1,6 @@
 (ns scad-tarmi.dfm-test
-  (:require [clojure.test :refer :all]
-            [scad-tarmi.dfm :refer :all]))
+  (:require [clojure.test :refer [deftest testing is]]
+            [scad-tarmi.dfm :refer [error-fn none]]))
 
 (deftest error-functions
   (testing "scalar/arithmetic use of error-fn."

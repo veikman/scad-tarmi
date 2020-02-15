@@ -1,5 +1,5 @@
 (ns scad-tarmi.util-test
-  (:require [clojure.test :refer :all]
+  (:require [clojure.test :refer [deftest testing is]]
             [scad-clj.model :refer [union hull circle]]
             [scad-tarmi.util :as util]))
 

@@ -3,8 +3,7 @@
 ;;; pre-empting 3D printer inaccuracies in the xy plane.
 
 (ns scad-tarmi.dfm
-  (:require [clojure.spec.alpha :as spec]
-            [scad-tarmi.maybe :as maybe]))
+  (:require [scad-tarmi.maybe :as maybe]))
 
 ;;;;;;;;;;;;;;
 ;; INTERNAL ;;
