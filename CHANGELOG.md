@@ -7,11 +7,13 @@ This change log follows the conventions of [keepachangelog.com](http://keepachan
   Preferred specs are available in `scad-tarmi.threaded.schema`.
 
 ### New
-- Added a Boolean `threaded` parameter to `bolt` and `rod` functions, enabling
-  negatives of threaded fasteners with a diameter suited to tapping the threads
-  with standard tools instead of printing the threads.
+- Added a Boolean `include-threading` parameter to `bolt` and `rod` functions,
+  enabling negatives of threaded fasteners with a diameter suited to tapping
+  the threads with standard tools instead of printing the threads.
 - In addition to its previous behaviour, `maybe/translate` will now absorb
   child elements that are single translations, further simplifying output.
+- Added a `total-bolt-length` function to the `threaded` module, for predicting
+  the length of a bolt.
 - Added a `schema` module for parameters to `threaded` functions, with parsers
   and a new composite spec for the `bolt` function.
 

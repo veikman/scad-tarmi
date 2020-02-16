@@ -61,12 +61,25 @@
       :button :button-height
       :countersunk :countersunk-height)))
 
+(defn total-bolt-length
+  "Get the projected length of an ISO bolt, including the head.
+  This is exposed for predicting the results of the bolt function in this
+  module and takes the same parameters."
+  [{:keys [iso-size total-length unthreaded-length threaded-length head-type]
+    :as options}]
+  {:pre [(spec/valid? ::schema/bolt-parameters options)]}
+  (if total-length
+    total-length
+    (+ (head-height iso-size head-type)
+       (or unthreaded-length 0)
+       (or threaded-length 0))))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;
 ;; INTERNAL FUNCTIONS ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn- bolt-length
+(defn- shank-section-lengths
   "Infer the lengths of the unthreaded and threaded parts of a bolt."
   [{:keys [total unthreaded threaded head] :as parameters}]
   (case (map some? [total unthreaded threaded])
@@ -350,7 +363,7 @@
   {:pre [(spec/valid? ::schema/bolt-parameters options)]}
   (let [hh (head-height iso-size head-type)
         pitch (or pitch (datum iso-size :thread-pitch-coarse))
-        lengths (bolt-length
+        lengths (shank-section-lengths
                   {:total total-length, :unthreaded unthreaded-length,
                    :threaded threaded-length, :head hh})
         [unthreaded-length threaded-length] lengths
