@@ -89,13 +89,17 @@ in the assembly of your product.
 
 If you do intend to model an M6 nut to carve out negative space for a real nut,
 the call would be `(nut :iso-size 6 :negative true)`, a less complicated shape.
-When you need a model of a bolt for a hole that you intend to tap yourself,
-pass both `:negative true` and `:threaded false` to the corresponding `bolt`
-function.
+To make space for a matching threaded bolt, the call might be `(bolt :iso-size
+6 :total-length 25 :negative true)`, plus any DFM compensator you require.
 
-Either way, you will need to use `scad-clj` to produce OpenSCAD code for the
-object. Check the [showcase code](src/showcase/core.clj) for examples of how
-to do that. A selection of the models produced by that code are shown
+The `threaded` module can also provide simpler models for holes that you intend
+to tap yourself, instead of actually printing the threading. Try passing
+`:include-threading false` to the `bolt` function.
+
+You will need to use `scad-clj`, for instance via
+`[scad-app](https://github.com/veikman/scad-app)`, to produce OpenSCAD code for
+the object. Check the [showcase code](src/showcase/core.clj) for examples of
+how to do that. A selection of the models produced by that code are shown
 [here](showcase/stl).
 
 ## Acknowledgements

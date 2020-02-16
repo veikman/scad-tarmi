@@ -83,11 +83,11 @@
                                  :compensator (dfm/error-fn))
                   "for tap"
                   (threaded/bolt :iso-size 4, :head-type :countersunk,
-                                 :threaded false, :total-length 10,
+                                 :include-threading false, :total-length 10,
                                  :negative true)
                   "oddball"
                   (threaded/bolt :iso-size 4, :head-type :countersunk,
-                                 :threaded false, :total-length 10,
+                                 :include-threading false, :total-length 10,
                                  :threaded-length 5, :negative true,
                                  :compensator (dfm/error-fn)))]]]
      (doall (pmap write files))

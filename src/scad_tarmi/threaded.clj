@@ -310,14 +310,14 @@
 
 (defn rod
   "A rod centred at [0 0 0].
-  By default, this is a threaded rod. However, if the “threaded” keyword
-  parameter is false, the rod will instead be a plain cylinder. If marked
-  as negative, such an unthreaded rod will be shrunk for tapping the hole
-  it makes, after printing. Otherwise, it will be left at regular DFM-nominal
-  size for threading with a die."
-  [& {:keys [iso-size length taper-fn threaded compensator negative]
-      :or {taper-fn rounding-taper, threaded true, compensator dfm/none,
-           negative false}
+  By default, this is a threaded rod. However, if the “include-threading”
+  keyword parameter is false, the rod will instead be a plain cylinder. If
+  marked as negative, such an unthreaded rod will be shrunk for tapping the
+  hole it makes, after printing. Otherwise, it will be left at regular
+  DFM-nominal size for threading with a die."
+  [& {:keys [iso-size length taper-fn include-threading compensator negative]
+      :or {taper-fn rounding-taper, include-threading true, negative false,
+           compensator dfm/none}
       :as options}]
   {:pre [(spec/valid? ::schema/iso-size iso-size)]}
   (let [options (merge {:outer-diameter iso-size
@@ -325,7 +325,7 @@
                         :taper-fn taper-fn}
                        options)]
     (compensator iso-size {:negative negative}
-      (if threaded
+      (if include-threading
         (thread options)
         (model/cylinder
           (if negative (bolt-inner-radius options) (/ iso-size 2))
@@ -342,8 +342,10 @@
   Likewise, though a point-type parameter is accepted, the only implemented
   option beyond the default flat point is a cone."
   [& {:keys [iso-size pitch total-length unthreaded-length threaded-length
-             head-type drive-type point-type threaded negative compensator]
-      :or {head-type :hex, threaded true, negative false, compensator dfm/none}
+             head-type drive-type point-type
+             include-threading negative compensator]
+      :or {head-type :hex, include-threading true, negative false,
+           compensator dfm/none}
       :as options}]
   {:pre [(spec/valid? ::schema/bolt-parameters options)]}
   (let [hh (head-height iso-size head-type)
@@ -373,7 +375,7 @@
               (rod :iso-size iso-size
                    :length threaded-length
                    :taper-fn bolt-taper
-                   :threaded threaded
+                   :include-threading include-threading
                    :negative negative)))
           (when (= point-type :cone)
             (model/translate
