@@ -123,9 +123,13 @@
 
 ;; Parameters to the bolt function.
 (spec/def ::bolt-parameters
-  (spec/keys :req-un [::iso-size]
-             :opt-un [::pitch
-                      ::total-length ::unthreaded-length ::threaded-length
-                      ::head-type ::drive-type ::point-type
-                      ::resolution
-                      ::include-threading ::negative]))
+  (spec/and
+    (spec/keys :req-un [::iso-size]
+               :opt-un [::pitch
+                        ::total-length ::unthreaded-length ::threaded-length
+                        ::head-type ::drive-type ::point-type
+                        ::resolution
+                        ::include-threading ::negative])
+    (spec/or
+      :explicit-total-length #(:total-length %)
+      :implicit-total-length #(:head-type %))))
