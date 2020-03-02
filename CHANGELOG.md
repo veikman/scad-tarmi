@@ -3,22 +3,12 @@ This change log follows the conventions of [keepachangelog.com](http://keepachan
 
 ## [Unreleased]
 ### Changed
-- Marked parameter validation specs in `scad-tarmi.threaded` as deprecated.
-  Preferred specs are available in `scad-tarmi.threaded.schema`.
-- The parameter validator for threaded bolts now requires at least a head type
-  in the absence of an explicit total length, so that the length of the bolt can
-  always be inferred. This is in addition to prior requirements.
+- The `threaded` module has been marked as deprecated for all purposes. Use
+  the `scad-klupe` library instead.
 
 ### New
-- Added a Boolean `include-threading` parameter to `bolt` and `rod` functions,
-  enabling negatives of threaded fasteners with a diameter suited to tapping
-  the threading with standard tools instead of printing the threading.
 - In addition to its previous behaviour, `maybe/translate` will now absorb
   child elements that are single translations, further simplifying output.
-- Added a `total-bolt-length` function to the `threaded` module, for predicting
-  the length of a bolt.
-- Added a `schema` module for parameters to `threaded` functions, with parsers
-  and a new composite spec for the `bolt` function.
 
 ## [Version 0.4.0]
 ### New

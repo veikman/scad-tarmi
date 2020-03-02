@@ -23,7 +23,7 @@ The [`maybe`](src/scad_tarmi/maybe.clj) module is very simple: It carries
 drop-in replacements for `scad-clj` functions that will produce as little
 output as possible, for slightly shorter OpenSCAD artefacts. The `maybe`
 version of `translate` will compact a series of translations into one
-operation.
+operation in OpenSCAD.
 
 The [`reckon`](src/scad_tarmi/reckon.clj) and [`flex`](src/scad_tarmi/flex.clj)
 modules also contain drop-in replacements, but for the purpose of reasoning
@@ -69,45 +69,13 @@ space is the primary use case. `error-fn` primarily expects a negative value
 as a measurement of error and will assume that any passed nominal measurement
 passed to a compensator should be enlarged.
 
-### Threaded fasteners
-
-The [`threaded`](src/scad_tarmi/threaded.clj) module describes threaded
-fasteners, including nuts and bolts, using the `core`, `maybe` and `dfm`
-modules.
-
-If in your `ns` declaration you `(:require [scad-tarmi.threaded :refer [nut]])`,
-you can then call `(nut :iso-size 6)` for an ISO 262 M6 hex nut. Its height
-and diameter are inferred from the standard, unless you pass overrides.
-It is internally threaded.
-
-Models of fasteners, as produced by this library, are neither perfectly
-accurate with respect to standards, nor engineered for ease of printing.
-Their main purpose is to form negative space: Relatively simple shapes used
-to carve out screw holes, nut pockets and similar cavities in 3D-printable
-designs. These holes would then be filled by ordinary steel nuts and bolts
-in the assembly of your product.
-
-If you do intend to model an M6 nut to carve out negative space for a real nut,
-the call would be `(nut :iso-size 6 :negative true)`, a less complicated shape.
-To make space for a matching threaded bolt, the call might be `(bolt :iso-size
-6 :total-length 25 :negative true)`, plus any DFM compensator you require.
-
-The `threaded` module can also provide simpler models for holes that you intend
-to tap yourself, instead of actually printing the threading. Try passing
-`:include-threading false` to the `bolt` function.
-
-You will need to use `scad-clj`, for instance via
-`[scad-app](https://github.com/veikman/scad-app)`, to produce OpenSCAD code for
-the object. Check the [showcase code](src/showcase/core.clj) for examples of
-how to do that. A selection of the models produced by that code are shown
-[here](showcase/stl).
-
 ## Acknowledgements
 
-The thread-drawing function (`threaded/thread`) is a reimplementation in
-Clojure of a corresponding function in `polyScrewThread_r1.scad`, created by
-*aubenc* [at Thingiverse](http://www.thingiverse.com/thing:8796) and released
-by the author into the public domain.
+The thread-drawing function (`threaded/thread`, deprecated since `scad-tarmi`
+v0.5.0 in favour of `scad-klupe`) is a reimplementation in Clojure of a
+corresponding function in `polyScrewThread_r1.scad`, created by *aubenc* [at
+Thingiverse](http://www.thingiverse.com/thing:8796) and released by the author
+into the public domain.
 
 ## License
 

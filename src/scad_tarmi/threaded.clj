@@ -1,12 +1,104 @@
 ;;; ISO 262/4017 fasteners and ISO 7089 washers.
 
+;;; All use of this module is DEPRECATED since scad-tarmi v0.5.0. The module is
+;;; slated to be removed entirely in v1.0.0 and is not maintained.
+;;; Please use the dedicated scad-klupe library instead. It has a similar, more
+;;; machine-friendly API and less surprising defaults.
+
 (ns scad-tarmi.threaded
   (:require [clojure.spec.alpha :as spec]
             [scad-clj.model :as model]
             [scad-tarmi.core :refer [sin cos τ long-hex-diagonal]]
             [scad-tarmi.maybe :as maybe]
-            [scad-tarmi.dfm :as dfm]
-            [scad-tarmi.threaded.schema :as schema]))
+            [scad-tarmi.dfm :as dfm]))
+
+;;;;;;;;;;;;;;;;;;;;;;;;
+;; INTERNAL CONSTANTS ;;
+;;;;;;;;;;;;;;;;;;;;;;;;
+
+(spec/def ::iso-property #{:hex-head-short-diagonal
+                           :hex-head-long-diagonal
+                           :head-hex-drive-short-diagonal
+                           :head-hex-drive-long-diagonal
+                           :iso4017-hex-head-height-nominal
+                           :hex-nut-height
+                           :socket-diameter
+                           :socket-height
+                           :button-diameter
+                           :button-height
+                           :countersunk-diameter
+                           :countersunk-height
+                           :thread-pitch-coarse
+                           :iso7089-inner-diameter
+                           :iso7089-outer-diameter
+                           :iso7089-thickness})
+
+(def ^:internal iso-data
+  "Various constants from ISO metric fastener standards.
+  This is a map of nominal ISO bolt diameter (in mm) to various other
+  measurements according to spec. Instead of relying on this raw data in
+  applications, prefer the more capable datum function."
+  {3 {:socket-diameter 5.5
+      :hex-nut-height 2.4
+      :iso4017-hex-head-height-nominal 2
+      :thread-pitch-coarse 0.5
+      :head-hex-drive-short-diagonal 2.5
+      :iso7089-inner-diameter 3.2
+      :iso7089-outer-diameter 7
+      :iso7089-thickness 0.5}
+   4 {:socket-diameter 7
+      :hex-nut-height 3.2
+      :iso4017-hex-head-height-nominal 2.8
+      :thread-pitch-coarse 0.7
+      :head-hex-drive-short-diagonal 3
+      :iso7089-inner-diameter 4.3
+      :iso7089-outer-diameter 9
+      :iso7089-thickness 0.8}
+   5 {:socket-diameter 8.5
+      :hex-head-short-diagonal 8
+      :hex-nut-height 4.7
+      :iso4017-hex-head-height-nominal 3.5
+      :thread-pitch-coarse 0.8
+      :head-hex-drive-short-diagonal 4
+      :iso7089-inner-diameter 5.3
+      :iso7089-outer-diameter 10
+      :iso7089-thickness 1}
+   6 {:socket-diameter 10
+      :hex-nut-height 5.2
+      :iso4017-hex-head-height-nominal 4
+      :thread-pitch-coarse 1
+      :head-hex-drive-short-diagonal 5
+      :iso7089-inner-diameter 6.4
+      :iso7089-outer-diameter 12
+      :iso7089-thickness 1.6}
+   8 {:socket-diameter 13
+      :hex-nut-height 6.8
+      :iso4017-hex-head-height-nominal 5.3
+      :thread-pitch-coarse 1.25
+      :head-hex-drive-short-diagonal 6
+      :iso7089-inner-diameter 8.4
+      :iso7089-outer-diameter 16
+      :iso7089-thickness 1.6}})
+
+
+;;;;;;;;;;;;;;;;;;;;;
+;; INTERFACE SPECS ;;
+;;;;;;;;;;;;;;;;;;;;;
+
+;; The following items are exposed for use in application data validation.
+
+;; Supported nominal diameters:
+(spec/def ::iso-nominal #(contains? iso-data %))
+
+;; Supported types of bolt heads:
+(spec/def ::head-type #{:hex     ; Hex head with the diameter of a nut.
+                        :socket  ; Full cylindrical counterbore cap.
+                        :button  ; Partial (low, smooth-edged) socket cap.
+                        :countersunk}) ; Flat head tapering toward the bolt.
+
+;; Supported types of bolt drives and points:
+(spec/def ::drive-type #{:hex})
+(spec/def ::point-type #{:cone})
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -16,9 +108,10 @@
 (defn datum
   "Retrieve or calculate a fact based on the ISO standards."
   [nominal-diameter key]
-  {:pre [(spec/valid? ::schema/iso-size nominal-diameter)
-         (spec/valid? ::schema/iso-property key)]}
-  (let [data (get schema/iso-data nominal-diameter)]
+  {:deprecated "0.5.0"
+   :pre [(spec/valid? ::iso-nominal nominal-diameter)
+         (spec/valid? ::iso-property key)]}
+  (let [data (get iso-data nominal-diameter)]
    (case key
      :hex-head-short-diagonal  ; Flat-to-flat width of a hex head.
        ;; For most sizes, this value is equal to socket diameter.
@@ -52,8 +145,9 @@
   This is exposed for predicting the results of the bolt function in this
   module, specifically where the transition from head to body will occur."
   [iso-size head-type]
-  {:pre [(spec/valid? ::schema/iso-size iso-size)
-         (spec/valid? ::schema/head-type head-type)]}
+  {:deprecated "0.5.0"
+   :pre [(spec/valid? ::iso-nominal iso-size)
+         (spec/valid? ::head-type head-type)]}
   (datum iso-size
     (case head-type
       :hex :iso4017-hex-head-height-nominal
@@ -61,25 +155,12 @@
       :button :button-height
       :countersunk :countersunk-height)))
 
-(defn total-bolt-length
-  "Get the projected length of an ISO bolt, including the head.
-  This is exposed for predicting the results of the bolt function in this
-  module and takes the same parameters."
-  [{:keys [iso-size total-length unthreaded-length threaded-length head-type]
-    :as options}]
-  {:pre [(spec/valid? ::schema/bolt-parameters options)]}
-  (if total-length
-    total-length
-    (+ (head-height iso-size head-type)
-       (or unthreaded-length 0)
-       (or threaded-length 0))))
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;
 ;; INTERNAL FUNCTIONS ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn- shank-section-lengths
+(defn- bolt-length
   "Infer the lengths of the unthreaded and threaded parts of a bolt."
   [{:keys [total unthreaded threaded head] :as parameters}]
   (case (map some? [total unthreaded threaded])
@@ -102,7 +183,6 @@
   "The inner radius of a piece of threading, meaning the distance from the
   center of a threaded rod to the bottom of a valley in its threading."
   [{:keys [outer-diameter pitch angle] :or {angle 1.0472}}]
-  {:pre [(number? outer-diameter) (number? pitch) (number? angle)]}
   (- (/ outer-diameter 2) (/ pitch (* 2 (/ (cos angle) (sin angle))))))
 
 (defn- hex-item
@@ -123,8 +203,8 @@
   to make sure the head will not protrude with normal printing defects."
   [{:keys [iso-size head-type countersink-edge-fn compensator]
     :or {countersink-edge-fn (fn [iso-size] (/ (Math/log iso-size) 8))}}]
-  {:pre [(spec/valid? ::schema/iso-size iso-size)
-         (spec/valid? ::schema/head-type head-type)]}
+  {:pre [(spec/valid? ::iso-nominal iso-size)
+         (spec/valid? ::head-type head-type)]}
   (let [height (head-height iso-size head-type)]
     (case head-type
       :hex
@@ -148,8 +228,8 @@
 (defn- bolt-drive
   "A model of the thing you stick your bit in."
   [{:keys [iso-size head-type drive-type drive-recess-depth]}]
-  {:pre [(spec/valid? ::schema/iso-size iso-size)
-         (spec/valid? ::schema/drive-type drive-type)]}
+  {:pre [(spec/valid? ::iso-nominal iso-size)
+         (spec/valid? ::drive-type drive-type)]}
   (let [depth (or drive-recess-depth
                   (/ (head-height iso-size head-type) 2))]
     (model/translate [0 0 (/ depth -2)]
@@ -248,7 +328,7 @@
 
 (defn- cone
   "A trivial conical point to a bolt. The characteristics of the cone
-  follow ISO 7434 (i.e. 90° angle, assuming a long screw; the tip is not
+  follow ISO 7434 (i.e. 90º angle, assuming a long screw; the tip is not
   blunted), but it’s not intended for making slotted set screws, just to
   prevent slicing software from building support inside negatives in the
   bottom of an object, where support is difficult to remove."
@@ -267,7 +347,8 @@
   "Close over a function to limit threading measurements as for either end of
   a threaded rod."
   [inner-radius outer-radius length]
-  {:pre [(number? inner-radius)
+  {:deprecated "0.5.0"
+   :pre [(number? inner-radius)
          (number? outer-radius)
          (number? length)]}
   (let [distance-fn (distance-to-end length)
@@ -286,7 +367,8 @@
   This permits a 1 μm overshoot to improve rendering of flared negatives
   inside hex nuts in OpenSCAD."
   [inner-radius outer-radius length]
-  {:pre [(number? inner-radius)
+  {:deprecated "0.5.0"
+   :pre [(number? inner-radius)
          (number? outer-radius)
          (number? length)]}
   (let [distance-fn (distance-to-end length)
@@ -308,6 +390,7 @@
   the top and inward again to the inner radius at the bottom, with a stretch
   of neutrality in the middle."
   [inner-radius outer-radius length]
+  {:deprecated "0.5.0"}
   (let [bottom (rounding-taper inner-radius outer-radius length)
         top (flare inner-radius outer-radius length)
         transition (/ length 2)]
@@ -322,27 +405,16 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn rod
-  "A rod centred at [0 0 0].
-  By default, this is a threaded rod. However, if the “include-threading”
-  keyword parameter is false, the rod will instead be a plain cylinder. If
-  marked as negative, such an unthreaded rod will be shrunk for tapping the
-  hole it makes, after printing. Otherwise, it will be left at regular
-  DFM-nominal size for threading with a die."
-  [& {:keys [iso-size length taper-fn include-threading compensator negative]
-      :or {taper-fn rounding-taper, include-threading true, negative false,
-           compensator dfm/none}
+  "A threaded rod centred at [0 0 0]."
+  [& {:keys [iso-size taper-fn compensator negative]
+      :or {taper-fn rounding-taper, compensator dfm/none, negative false}
       :as options}]
-  {:pre [(spec/valid? ::schema/iso-size iso-size)]}
-  (let [options (merge {:outer-diameter iso-size
-                        :pitch (datum iso-size :thread-pitch-coarse)
-                        :taper-fn taper-fn}
-                       options)]
-    (compensator iso-size {:negative negative}
-      (if include-threading
-        (thread options)
-        (model/cylinder
-          (if negative (bolt-inner-radius options) (/ iso-size 2))
-          length)))))
+  {:deprecated "0.5.0"
+   :pre [(spec/valid? ::iso-nominal iso-size)]}
+  (compensator iso-size {:negative negative}
+    (thread (merge options {:outer-diameter iso-size
+                            :pitch (datum iso-size :thread-pitch-coarse)
+                            :taper-fn taper-fn}))))
 
 (defn bolt
   "A model of an ISO metric bolt.
@@ -354,16 +426,18 @@
   drive is supported, and even that will be ignored on a negative.
   Likewise, though a point-type parameter is accepted, the only implemented
   option beyond the default flat point is a cone."
-  [& {:keys [iso-size pitch total-length unthreaded-length threaded-length
-             head-type drive-type point-type
-             include-threading negative compensator]
-      :or {head-type :hex, include-threading true, negative false,
-           compensator dfm/none}
+  [& {:keys [iso-size pitch head-type drive-type point-type
+             total-length unthreaded-length threaded-length
+             compensator negative]
+      :or {head-type :hex, compensator dfm/none, negative false}
       :as options}]
-  {:pre [(spec/valid? ::schema/bolt-parameters options)]}
+  {:deprecated "0.5.0"
+   :pre [(spec/valid? ::iso-nominal iso-size)
+         (spec/valid? (spec/nilable ::head-type) head-type)
+         (spec/valid? (spec/nilable ::point-type) point-type)]}
   (let [hh (head-height iso-size head-type)
         pitch (or pitch (datum iso-size :thread-pitch-coarse))
-        lengths (shank-section-lengths
+        lengths (bolt-length
                   {:total total-length, :unthreaded unthreaded-length,
                    :threaded threaded-length, :head hh})
         [unthreaded-length threaded-length] lengths
@@ -387,9 +461,7 @@
               [0 0 (- (- (+ hh unthreaded-length)) (/ threaded-length 2))]
               (rod :iso-size iso-size
                    :length threaded-length
-                   :taper-fn bolt-taper
-                   :include-threading include-threading
-                   :negative negative)))
+                   :taper-fn bolt-taper)))
           (when (= point-type :cone)
             (model/translate
               [0 0 (- (- (+ hh unthreaded-length threaded-length))
@@ -410,7 +482,8 @@
   "A single hex nut centred at [0 0 0]."
   [& {:keys [iso-size height compensator negative]
       :or {compensator dfm/none}}]
-  {:pre [(spec/valid? ::schema/iso-size iso-size)]}
+  {:deprecated "0.5.0"
+   :pre [(spec/valid? ::iso-nominal iso-size)]}
   (let [height (or height (datum iso-size :hex-nut-height))]
     (if negative
       ;; A convex model of a nut.
@@ -429,21 +502,10 @@
 (defn washer
   "A flat, round washer centred at [0 0 0]."
   [& {:keys [iso-size inner-diameter outer-diameter height]}]
+  {:deprecated "0.5.0"}
   (let [id (or inner-diameter (datum iso-size :iso7089-inner-diameter))
         od (or outer-diameter (datum iso-size :iso7089-outer-diameter))
         thickness (or height (datum iso-size :iso7089-thickness))]
     (model/difference
       (model/cylinder (/ od 2) thickness)
       (model/cylinder (/ id 2) (+ thickness 1)))))
-
-
-;;;;;;;;;;;;;;;;
-;; DEPRECATED ;;
-;;;;;;;;;;;;;;;;
-
-;; The following items are deprecated since scad-tarmi v0.5.0 and will be removed in v1.0.0.
-
-(spec/def ::iso-nominal ::schema/iso-size)
-(spec/def ::head-type ::schema/head-type)
-(spec/def ::drive-type ::schema/drive-type)
-(spec/def ::point-type ::schema/point-type)
