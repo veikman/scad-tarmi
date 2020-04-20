@@ -1,4 +1,4 @@
-(defproject scad-tarmi "0.6.0-SNAPSHOT"
+(defproject scad-tarmi "0.6.0"
   :description "Commonplace abstractions for scad-clj"
   :url "https://github.com/veikman/scad-tarmi"
   :license {:name "Eclipse Public License"

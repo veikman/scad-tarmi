@@ -2,6 +2,9 @@
 This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
 ## [Unreleased]
+Nothing yet.
+
+## [Version 0.6.0]
 ### New
 - Added `projection`, `project` and `cut` to `maybe`.
 
@@ -46,8 +49,9 @@ This change log follows the conventions of [keepachangelog.com](http://keepachan
 - Added a handful of constants and abbreviations of dubious value:
   √, sin, cos, π and τ.
 
-[Unreleased]: https://github.com/veikman/scad-tarmi/compare/v0.5.0...HEAD
-[Version 0.4.0]: https://github.com/veikman/scad-tarmi/compare/v0.4.0...v0.5.0
+[Unreleased]: https://github.com/veikman/scad-tarmi/compare/v0.6.0...HEAD
+[Version 0.6.0]: https://github.com/veikman/scad-tarmi/compare/v0.5.0...v0.6.0
+[Version 0.5.0]: https://github.com/veikman/scad-tarmi/compare/v0.4.0...v0.5.0
 [Version 0.4.0]: https://github.com/veikman/scad-tarmi/compare/v0.3.0...v0.4.0
 [Version 0.3.0]: https://github.com/veikman/scad-tarmi/compare/v0.2.0...v0.3.0
 [Version 0.2.0]: https://github.com/veikman/scad-tarmi/compare/v0.1.0...v0.2.0
