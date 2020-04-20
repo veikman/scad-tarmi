@@ -2,7 +2,8 @@
 This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
 ## [Unreleased]
-Nothing yet.
+### New
+- Added `projection`, `project` and `cut` to `maybe`.
 
 ## [Version 0.5.0]
 ### Changed

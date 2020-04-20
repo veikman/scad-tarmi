@@ -26,6 +26,17 @@
            `(:translate [0 0 0] ::a ::b)))
     (is (= (reference/translate [0 0 0] (reference/translate [1 0 0] ::a ::b))
            `(:translate [0 0 0] (:translate [1 0 0] ::a ::b)))))
+  (testing "projection’s original behaviour."
+    (is (= (reference/projection true ::a)
+           `(:projection {:cut reference/cut} ::a)))
+    (is (= (reference/projection true nil)
+           `(:projection {:cut reference/cut} nil))))
+  (testing "project’s original behaviour."
+    (is (= (reference/project ::a)
+           `(:projection {:cut false} ::a))))
+  (testing "cut’s original behaviour."
+    (is (= (reference/cut ::a)
+           `(:projection {:cut true} ::a))))
   (testing "polygon’s original behaviour."  ; With idiosyncrasies.
     (is (= (reference/polygon [[0 0]])
            `(:polygon {:points [[0 0]]})))
@@ -121,6 +132,24 @@
            `(:translate [0 1 0] ~(reference/rotate [0 1 0] ::a))))
     (is (= (maybe/translate [0 0 0] (reference/rotate [0 1 0] ::a))
            (list (reference/rotate [0 1 0] ::a))))))
+
+(deftest maybe-projection-fn
+  (testing "maybe/projection and friends with one shape."
+    (is (= (maybe/projection true ::a)
+           `(:projection {:cut true} ::a)))
+    (is (= (maybe/project ::a)
+           `(:projection {:cut false} ::a)))
+    (is (= (maybe/cut ::a)
+           `(:projection {:cut true} ::a))))
+  (testing "maybe/projection and friends with no shape."
+    (is (not (maybe/projection true)))
+    (is (not (maybe/projection false)))
+    (is (not (maybe/projection true nil)))
+    (is (not (maybe/projection false nil)))
+    (is (not (maybe/project)))
+    (is (not (maybe/project nil)))
+    (is (not (maybe/cut)))
+    (is (not (maybe/cut nil)))))
 
 (deftest maybe-polygon-fn
   (testing "maybe/polygon with its neutral argument only."

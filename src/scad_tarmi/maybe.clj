@@ -37,8 +37,9 @@
   (fn [& args]
     (when-not (apply neutral-predicate args) (apply model-function args))))
 
-(defn- geometric-boolean
-  "Take a Boolean scad-clj function.
+(defn- interactor
+  "Take a Boolean scad-clj function like union, or a similar form that operates
+  on two or more OpenSCAD blocks without other parameters.
   Return a corresponding function that will omit the scad-clj function where
   it would do nothing."
   [model-function]
@@ -46,6 +47,17 @@
     (let [non-nil (remove nil? block)]
       (if (empty? (rest non-nil))
         (first non-nil)
+        (apply model-function non-nil)))))
+
+(defn- projector
+  "Take a scad-clj function like cut that operates on one or more OpenSCAD
+  blocks without other parameters.
+  Return a corresponding function that will omit the scad-clj function where
+  it would do nothing."
+  [model-function]
+  (fn [& block]
+    (let [non-nil (remove nil? block)]
+      (when (seq non-nil)
         (apply model-function non-nil)))))
 
 
@@ -73,13 +85,19 @@
           (apply (partial plain arg) block)))
       (apply (partial plain arg) block))))
 
-(def union (geometric-boolean model/union))
+(def union (interactor model/union))
 
-(def intersection (geometric-boolean model/intersection))
+(def intersection (interactor model/intersection))
 
-(def difference (geometric-boolean model/difference))
+(def difference (interactor model/difference))
 
-(def hull (geometric-boolean model/hull))
+(def project (projector model/project))
+
+(def cut (projector model/cut))
+
+(defn projection [is-cut & block] (apply (if is-cut cut project) block))
+
+(def hull (interactor model/hull))
 
 (def polygon (shape model/polygon (fn [p & _] (empty? p))))
 
