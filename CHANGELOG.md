@@ -4,6 +4,7 @@ This change log follows the conventions of [keepachangelog.com](http://keepachan
 ## [Unreleased]
 ### Changed
 - Added support for one-dimensional numeric use of error-fn closures.
+- Added support for modifying local error by a coefficient.
 
 ## [Version 0.6.0]
 ### New

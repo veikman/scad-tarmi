@@ -7,10 +7,12 @@
     (let [c (error-fn)]
       (is (= (c 10) 10.5))
       (is (= (c 10 {:negative true}) 10.5))
-      (is (= (c 10 {:negative false}) 9.75)))
+      (is (= (c 10 {:negative false}) 9.75))
+      (is (= (c 10 {:negative false, :factor 3}) 9.25)))
     (let [c (error-fn 1)]
       (is (= (c 10) 9))
       (is (= (c 10 {:negative true}) 9))
+      (is (= (c 10 {:negative true, :factor 0.5}) 9.5))
       (is (= (c 10 {:negative false}) 21/2))))
   (testing "vector/multiplicative use of error-fn with default options."
     (is (= ((error-fn -1) 10 {} ::a)
