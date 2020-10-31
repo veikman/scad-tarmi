@@ -4,8 +4,14 @@
 
 (deftest error-functions
   (testing "scalar/arithmetic use of error-fn."
-    (is (= ((error-fn -1) 10)
-           11)))
+    (let [c (error-fn)]
+      (is (= (c 10) 10.5))
+      (is (= (c 10 {:negative true}) 10.5))
+      (is (= (c 10 {:negative false}) 9.75)))
+    (let [c (error-fn 1)]
+      (is (= (c 10) 9))
+      (is (= (c 10 {:negative true}) 9))
+      (is (= (c 10 {:negative false}) 21/2))))
   (testing "vector/multiplicative use of error-fn with default options."
     (is (= ((error-fn -1) 10 {} ::a)
            `(:scale [11/10 11/10 1] ::a))))

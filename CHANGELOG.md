@@ -2,7 +2,8 @@
 This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
 ## [Unreleased]
-Nothing yet.
+### Changed
+- Added support for one-dimensional numeric use of error-fn closures.
 
 ## [Version 0.6.0]
 ### New
