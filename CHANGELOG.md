@@ -2,6 +2,9 @@
 This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
 ## [Unreleased]
+Nothing yet.
+
+## [Version 0.7.0]
 ### Changed
 - Added support for one-dimensional numeric use of error-fn closures.
 - Added support for modifying local error by a coefficient.
@@ -51,7 +54,8 @@ This change log follows the conventions of [keepachangelog.com](http://keepachan
 - Added a handful of constants and abbreviations of dubious value:
   √, sin, cos, π and τ.
 
-[Unreleased]: https://github.com/veikman/scad-tarmi/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/veikman/scad-tarmi/compare/v0.7.0...HEAD
+[Version 0.7.0]: https://github.com/veikman/scad-tarmi/compare/v0.6.0...v0.7.0
 [Version 0.6.0]: https://github.com/veikman/scad-tarmi/compare/v0.5.0...v0.6.0
 [Version 0.5.0]: https://github.com/veikman/scad-tarmi/compare/v0.4.0...v0.5.0
 [Version 0.4.0]: https://github.com/veikman/scad-tarmi/compare/v0.3.0...v0.4.0
