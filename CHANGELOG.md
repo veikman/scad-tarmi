@@ -4,6 +4,9 @@ This change log follows the conventions of [keepachangelog.com](http://keepachan
 ## [Unreleased]
 Nothing yet.
 
+## Added
+- `maybe/offset`.
+
 ## [Version 0.7.0]
 ### Changed
 - Added support for one-dimensional numeric use of error-fn closures.

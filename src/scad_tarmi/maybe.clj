@@ -85,6 +85,8 @@
           (apply (partial plain arg) block)))
       (apply (partial plain arg) block))))
 
+(def offset (transformer model/offset zero?))
+
 (def union (interactor model/union))
 
 (def intersection (interactor model/intersection))
