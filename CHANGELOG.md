@@ -5,56 +5,56 @@ This change log follows the conventions of [keepachangelog.com](http://keepachan
 Nothing yet.
 
 ## Added
-- `maybe/offset`.
+- A “maybe” wrapper for `offset`.
 
 ## [Version 0.7.0]
-### Changed
-- Added support for one-dimensional numeric use of error-fn closures.
-- Added support for modifying local error by a coefficient.
+### Added
+- Support for one-dimensional numeric use of error-fn closures.
+- Support for modifying local error by a coefficient.
 
 ## [Version 0.6.0]
-### New
-- Added `projection`, `project` and `cut` to `maybe`.
+### Added
+- `projection`, `project` and `cut` to `maybe`.
 
 ## [Version 0.5.0]
 ### Changed
 - The `threaded` module has been marked as deprecated for all purposes. Use
   the `scad-klupe` library instead.
 
-### New
+### Added
 - In addition to its previous behaviour, `maybe/translate` will now absorb
   child elements that are single translations, further simplifying output.
 
 ## [Version 0.4.0]
-### New
-- Added an optional `point-type` parameter to `threaded/bolt`. It takes one
+### Added
+- An optional `point-type` parameter to `threaded/bolt`. It takes one
   value, `:cone`, and leaves the point of the bolt flat when omitted.
-- Added a “maybe” wrapper for `hull`.
+- A “maybe” wrapper for `hull`.
 
 ## [Version 0.3.0]
-### New
-- Added a `util` namespace with `loft` and `radiate` functions.
-- Added a `flex` namespace with functions that apply their namesakes from the
+### Added
+- A `util` namespace with `loft` and `radiate` functions.
+- A `flex` namespace with functions that apply their namesakes from the
   `reckon` or `maybe` modules, upon inspection of their arguments.
-- Added “maybe” wrappers for `mirror` and `polyhedron`.
-- Added a `mean` function.
-- Added a `unit-circle-point-coord` function.
-- Added some registered Clojure specs for Cartesian coordinates.
+- “maybe” wrappers for `mirror` and `polyhedron`.
+- A `mean` function.
+- A `unit-circle-point-coord` function.
+- Some registered Clojure specs for Cartesian coordinates.
 
 ## [Version 0.2.0]
-### New
-- Added a `reckon` module for reasoning about a model.
-- Added an `abs` function for absolute values.
+### Added
+- A `reckon` module for reasoning about a model.
+- An `abs` function for absolute values.
 
 ## Version 0.1.0
-### New
-- Added “maybe” wrappers for `rotate`, `scale`, `translate`, `union`,
+### Added
+- “maybe” wrappers for `rotate`, `scale`, `translate`, `union`,
   `intersection`, `difference` and `polygon`.
-- Added a couple of functions for DFM.
-- Added threaded fasteners and a script showcasing a selection of these.
-- Added `long-hex-diagonal` for computing the long diagonal of a hexagon
+- A couple of functions for DFM.
+- Threaded fasteners and a script showcasing a selection of these.
+- `long-hex-diagonal` for computing the long diagonal of a hexagon
   from the short diagonal.
-- Added a handful of constants and abbreviations of dubious value:
+- A handful of constants and abbreviations of dubious value:
   √, sin, cos, π and τ.
 
 [Unreleased]: https://github.com/veikman/scad-tarmi/compare/v0.7.0...HEAD
