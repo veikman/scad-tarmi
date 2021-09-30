@@ -4,7 +4,8 @@ This change log follows the conventions of [keepachangelog.com](http://keepachan
 ## [Unreleased]
 Nothing yet.
 
-## Added
+## [Version 0.8.0]
+### Added
 - A “maybe” wrapper for `offset`.
 
 ## [Version 0.7.0]
@@ -14,7 +15,7 @@ Nothing yet.
 
 ## [Version 0.6.0]
 ### Added
-- `projection`, `project` and `cut` to `maybe`.
+- “maybe” wrappers for `projection`, `project` and `cut`.
 
 ## [Version 0.5.0]
 ### Changed
@@ -57,7 +58,8 @@ Nothing yet.
 - A handful of constants and abbreviations of dubious value:
   √, sin, cos, π and τ.
 
-[Unreleased]: https://github.com/veikman/scad-tarmi/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/veikman/scad-tarmi/compare/v0.8.0...HEAD
+[Version 0.8.0]: https://github.com/veikman/scad-tarmi/compare/v0.7.0...v0.8.0
 [Version 0.7.0]: https://github.com/veikman/scad-tarmi/compare/v0.6.0...v0.7.0
 [Version 0.6.0]: https://github.com/veikman/scad-tarmi/compare/v0.5.0...v0.6.0
 [Version 0.5.0]: https://github.com/veikman/scad-tarmi/compare/v0.4.0...v0.5.0
