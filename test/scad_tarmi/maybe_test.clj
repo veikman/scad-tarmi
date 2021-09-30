@@ -26,6 +26,13 @@
            `(:translate [0 0 0] ::a ::b)))
     (is (= (reference/translate [0 0 0] (reference/translate [1 0 0] ::a ::b))
            `(:translate [0 0 0] (:translate [1 0 0] ::a ::b)))))
+  (testing "offset’s original behaviour."
+    (is (= (reference/offset 0 ::a)
+           `(:offset {:r 0} ::a)))
+    (is (= (reference/offset 0 ::a ::b)
+           `(:offset {:r 0} ::a ::b)))
+    (is (= (reference/offset 0 (reference/offset 1 ::a ::b))
+           `(:offset {:r 0} (:offset {:r 1} ::a ::b)))))
   (testing "projection’s original behaviour."
     (is (= (reference/projection true ::a)
            `(:projection {:cut reference/cut} ::a)))
@@ -132,6 +139,24 @@
            `(:translate [0 1 0] ~(reference/rotate [0 1 0] ::a))))
     (is (= (maybe/translate [0 0 0] (reference/rotate [0 1 0] ::a))
            (list (reference/rotate [0 1 0] ::a))))))
+
+(deftest maybe-offset-fn
+  (testing "maybe/offset with its neutral argument and one shape."
+    (is (= (maybe/offset 0 ::a)
+           `(::a)))
+    (is (= (maybe/offset 0.0 ::a)
+           `(::a))))
+  (testing "maybe/offset with its neutral argument and two shapes."
+    (is (= (maybe/offset 0 ::a ::b)
+           `(::a ::b))))
+  (testing "maybe/offset for a non-neutral argument and one shape."
+    (is (= (maybe/offset -1 ::a)
+           `(:offset {:r -1} ::a)))
+    (is (= (maybe/offset 0.1 ::a)
+           `(:offset {:r 0.1} ::a))))
+  (testing "maybe/offset for a non-neutral argument and two shapes."
+    (is (= (maybe/offset -1 ::a ::b)
+           `(:offset {:r -1} ::a ::b)))))
 
 (deftest maybe-projection-fn
   (testing "maybe/projection and friends with one shape."
