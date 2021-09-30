@@ -27,8 +27,8 @@ will compact a series of translations into one operation in OpenSCAD.
 The [`reckon`](src/scad_tarmi/reckon.clj) and [`flex`](src/scad_tarmi/flex.clj)
 modules also contain drop-in replacements, but for the purpose of reasoning
 about what a model will look like. `reckon` has numeric versions of OpenSCAD
-operations. `flex` uses either `reckon` or standard `scad-clj` functions
-depending on an inpection of their input.
+operations. `flex` uses either `reckon` or `maybe` functions depending on
+whether their input is itself numeric.
 
 ### Design for manufacturability
 
@@ -79,7 +79,7 @@ into the public domain.
 
 ## License
 
-Copyright © 2018-2020 Viktor Eikman
+Copyright © 2018–2021 Viktor Eikman
 
 This software is distributed under the [Eclipse Public License](LICENSE-EPL),
 (EPL) v2.0 or any later version thereof. This software may also be made
