@@ -5,6 +5,12 @@
 (deftest error-functions
   (testing "scalar/arithmetic use of error-fn."
     (let [c (error-fn)]
+      (is (= (c 0) 0))
+      (is (= (c 0.0) 0))
+      (is (= (c -0.4) 0.09999999999999998))  ; Floating-point shenanigans.
+      (is (= (c -0.5) 0.0))
+      (is (= (c -0.6) -0.09999999999999998))
+      (is (= (c 0.5) 1.0))
       (is (= (c 10) 10.5))
       (is (= (c 10 {:negative true}) 10.5))
       (is (= (c 10 {:negative false}) 9.75))
