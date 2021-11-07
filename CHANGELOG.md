@@ -2,7 +2,9 @@
 This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
 ## [Unreleased]
-Nothing yet.
+### Fixed
+- Error functions now return zero for a measurement of zero, whereas before,
+  they would throw an `ArithmeticException`.
 
 ## [Version 0.8.0]
 ### Added
