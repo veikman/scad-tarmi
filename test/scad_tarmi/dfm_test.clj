@@ -7,7 +7,8 @@
     (let [c (error-fn 10)]
       (is (= (c 0) 0))
       (is (= (c 0.0) 0))
-      (is (= (c 9) -1))
+      (is (= (c 1) 0))
+      (is (= (c 9) 0))
       (is (= (c 10) 0))
       (is (= (c 11) 1))
       (is (= (c 12) 2))
@@ -28,6 +29,7 @@
            `(:scale [19/20 19/20 1] ::a))))
   (testing "default error-fn."
     (let [c (error-fn)]
+      (is (= (c -0.6) 0))
       (is (= (c -0.5) 0.0))
       (is (= (c -0.4) 0.09999999999999998))
       (is (= (c -0.3) 0.2))
@@ -38,7 +40,8 @@
       (is (= (c 0.2) 0.7))
       (is (= (c 0.3) 0.8))
       (is (= (c 0.4) 0.9))
-      (is (= (c 0.5) 1.0)))))
+      (is (= (c 0.5) 1.0))
+      (is (= (c 1 {} ::a) `(:scale [1.5 1.5 1] ::a))))))
 
 (deftest no-error
   (testing "the none function with default options."

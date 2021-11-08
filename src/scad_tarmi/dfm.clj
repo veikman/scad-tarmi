@@ -60,14 +60,14 @@
         0
         (let [{:keys [negative x y z factor]
                :or {negative true, x true, y true, z false, factor 1}} options
-              deviation (* factor (if negative negative-error positive-error))
-              n (ratio nominal deviation)
-              factors (vec (map #(if % n 1) [x y z]))]
-          (if (nil? block)
-            ;; No shape was passed. Return a number.
-            (- nominal deviation)
+              deviation (* factor (if negative negative-error positive-error))]
+          (if (empty? block)
+            ;; No shape was passed. Return a non-negative number.
+            (max 0 (- nominal deviation))
             ;; Return a shape.
-            (apply (partial maybe/scale factors) block))))))))
+            (let [n (max 0 (ratio nominal deviation))
+                  factors (vec (map #(if % n 1) [x y z]))]
+              (apply (partial maybe/scale factors) block)))))))))
 
 (def none
   "An error function that leaves no trace in OpenSCAD code."

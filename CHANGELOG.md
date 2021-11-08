@@ -3,6 +3,7 @@ This change log follows the conventions of [keepachangelog.com](http://keepachan
 
 ## [Unreleased]
 ### Fixed
+- Error functions no longer reduce measurements to below zero.
 - Error functions now return zero for a measurement of zero, whereas before,
   they would throw an `ArithmeticException`.
 
