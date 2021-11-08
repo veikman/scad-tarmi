@@ -2,6 +2,9 @@
 This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
 ## [Unreleased]
+Nothing yet.
+
+## [Version 0.8.1]
 ### Fixed
 - Error functions no longer reduce measurements to below zero.
 - Error functions now return zero for a measurement of zero, whereas before,
@@ -61,7 +64,8 @@ This change log follows the conventions of [keepachangelog.com](http://keepachan
 - A handful of constants and abbreviations of dubious value:
   √, sin, cos, π and τ.
 
-[Unreleased]: https://github.com/veikman/scad-tarmi/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/veikman/scad-tarmi/compare/v0.8.1...HEAD
+[Version 0.8.1]: https://github.com/veikman/scad-tarmi/compare/v0.8.0...v0.8.1
 [Version 0.8.0]: https://github.com/veikman/scad-tarmi/compare/v0.7.0...v0.8.0
 [Version 0.7.0]: https://github.com/veikman/scad-tarmi/compare/v0.6.0...v0.7.0
 [Version 0.6.0]: https://github.com/veikman/scad-tarmi/compare/v0.5.0...v0.6.0
